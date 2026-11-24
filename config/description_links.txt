@@ -1,0 +1,6 @@
+# Lines here are added to every video description, above the sources and credits.
+# Lines starting with # are ignored. Leave the file empty (or all #) to add nothing.
+# Examples (remove the # to use):
+# 🙏 चैनल से जुड़ें / Join the channel: https://www.youtube.com/@yourchannel/join
+# 📿 Recommended books and malas (affiliate links): https://example.com/your-list
+# Instagram: https://instagram.com/yourchannel

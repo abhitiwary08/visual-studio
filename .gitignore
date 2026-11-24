@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+data/
+config/client_secret.json
+config/youtube_token.json
+assets/music/*
+!assets/music/.gitkeep
+config/meta_token.json

@@ -1,0 +1,1486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video studio</title>
+<script>try { const t = localStorage.getItem("theme"), p = localStorage.getItem("palette"); if (t === "dark" || t === "light") document.documentElement.dataset.theme = t; if (["saffron", "indigo", "tulsi", "lotus"].includes(p)) document.documentElement.dataset.palette = p; } catch (e) { /* storage blocked */ }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap">
+<style>
+@font-face { font-family: "Studio"; src: url("/fonts/devanagari-regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Studio"; src: url("/fonts/devanagari-bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
+
+:root {
+  --ink: #16213e;
+  --ink-soft: #46537a;
+  --paper: #eceff4;
+  --field: #fbfcfe;
+  --rail: #111a33;
+  --rail-text: #d5dbec;
+  --rail-muted: #8d99bb;
+  --line: #cbd2e1;
+  --saffron: #e8801a;
+  --saffron-deep: #a85505;
+  --gold: #c9962b;
+  --lotus: #2b7a58;
+  --brick: #b0392a;
+  --radius: 6px;
+}
+* { box-sizing: border-box; }
+html { font-size: 16px; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: "Studio", system-ui, -apple-system, "Segoe UI", "Noto Sans Devanagari", sans-serif;
+  line-height: 1.55;
+}
+h1, h2, h3 { margin: 0; line-height: 1.25; }
+h1 { font-size: 1.75rem; }
+h2 { font-size: 1.125rem; }
+p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--saffron); outline-offset: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.muted { color: var(--ink-soft); font-size: 0.875rem; }
+.hi { font-size: 1.0625rem; line-height: 1.75; }
+
+/* ---------- layout ---------- */
+.app { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
+.rail { background: var(--rail); color: var(--rail-text); padding: 22px 0 16px; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+.brand { display: flex; align-items: center; gap: 12px; padding: 0 22px 18px; }
+.brand .om { font-size: 2rem; color: var(--saffron); line-height: 1; }
+.brand strong { display: block; color: #fff; font-size: 1.125rem; }
+.brand small { color: var(--rail-muted); font-size: 0.8125rem; }
+.rail .btn { margin: 0 22px 14px; }
+.joblist { flex: 1; overflow-y: auto; border-top: 1px solid rgba(255,255,255,.08); }
+.job { display: block; width: 100%; text-align: left; background: none; border: 0; border-left: 3px solid transparent; color: inherit; padding: 12px 22px 12px 19px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,.06); }
+.job:hover { background: rgba(255,255,255,.04); }
+.job[aria-current="true"] { border-left-color: var(--saffron); background: rgba(255,255,255,.07); }
+.job .t { display: block; color: #fff; font-size: 0.9375rem; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.job .s { display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 0.8125rem; color: var(--rail-muted); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rail-muted); flex: none; }
+.dot.run { background: var(--saffron); }
+.dot.ok { background: #5fbf92; }
+.dot.err { background: #ef7a68; }
+.empty-rail { padding: 20px 22px; color: var(--rail-muted); font-size: 0.9375rem; }
+.setup-link { margin: 0; padding: 14px 22px 4px; background: none; border: 0; border-top: 1px solid rgba(255,255,255,.08); color: var(--rail-text); text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+.setup-link:hover { color: #fff; }
+
+main { padding: 32px 40px 80px; max-width: 1040px; width: 100%; }
+.page-head { margin-bottom: 24px; }
+.page-head .muted { margin-top: 6px; }
+
+/* ---------- buttons & fields ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: var(--radius); padding: 10px 18px; font-weight: 700; cursor: pointer; border: 1.5px solid transparent; background: none; text-decoration: none; }
+.btn.primary { background: var(--saffron); color: var(--ink); }
+.btn.primary:hover { background: #f08f2e; }
+.btn.secondary { border-color: var(--ink); color: var(--ink); }
+.btn.secondary:hover { background: rgba(22,33,62,.07); }
+.btn.quiet { padding: 6px 0; margin-right: 18px; font-weight: 400; color: var(--saffron-deep); text-decoration: underline; text-underline-offset: 3px; }
+.btn.danger { color: var(--brick); }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.rail .btn.primary { width: calc(100% - 44px); }
+.rail .btn.rail-studio { width: calc(100% - 44px); border: 1.5px solid var(--saffron); color: #fff; margin-top: -4px; }
+.rail .btn.rail-studio:hover { background: rgba(232,128,26,.18); }
+.rail .btn.rail-studio[aria-current="true"] { background: rgba(232,128,26,.28); }
+#updateNote { position: fixed; left: 50%; top: 14px; transform: translateX(-50%); z-index: 10; background: var(--ink); color: #fff; padding: 10px 14px; border-radius: var(--radius); box-shadow: 0 6px 24px rgba(10,16,36,.3); display: flex; gap: 12px; align-items: center; max-width: calc(100vw - 32px); }
+#updateNote .btn { padding: 6px 12px; }
+
+label.f { display: block; font-weight: 700; margin-bottom: 6px; font-size: 0.9375rem; }
+input[type=text], input[type=number], input[type=datetime-local], select, textarea {
+  width: 100%; background: var(--field); border: 1.5px solid var(--line); border-radius: 4px; padding: 9px 11px;
+}
+textarea { resize: vertical; min-height: 84px; }
+input:hover, select:hover, textarea:hover { border-color: #aab4cb; }
+input:focus, select:focus, textarea:focus { border-color: var(--saffron-deep); outline: none; box-shadow: 0 0 0 3px rgba(232,128,26,.25); }
+.field { margin-bottom: 20px; }
+.row { display: grid; gap: 18px; }
+.row.c2 { grid-template-columns: 1fr 1fr; }
+.row.c3 { grid-template-columns: 2fr 2fr 1fr; }
+.hint { color: var(--ink-soft); font-size: 0.875rem; margin-top: 6px; }
+.check { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; cursor: pointer; }
+.check input { margin-top: 5px; accent-color: var(--saffron-deep); width: 17px; height: 17px; }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+/* ---------- pipeline wick (the one bold element) ---------- */
+.wick { position: relative; margin: 8px 0 6px; padding-top: 34px; }
+.wick-track { position: absolute; left: 12.5%; right: 12.5%; top: 52px; height: 4px; background: #c2cadb; border-radius: 2px; }
+.wick-fill { position: absolute; left: 0; top: 0; bottom: 0; width: var(--head); background: linear-gradient(90deg, var(--gold), var(--saffron)); border-radius: 2px; transition: width .6s ease; }
+.flame { position: absolute; left: var(--head); top: -34px; width: 22px; height: 30px; transform: translateX(-50%); transform-origin: 50% 90%; transition: left .6s ease; filter: drop-shadow(0 0 8px rgba(232,128,26,.6)); animation: flicker 1.6s ease-in-out infinite; }
+.flame.rest { animation: none; opacity: .9; }
+@keyframes flicker { 0%,100% { transform: translateX(-50%) scale(1,1) rotate(-1deg); } 35% { transform: translateX(-50%) scale(.94,1.06) rotate(1.5deg); } 70% { transform: translateX(-50%) scale(1.03,.97) rotate(-.5deg); } }
+.wick-nodes { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); position: relative; }
+.wick-nodes li { text-align: center; position: relative; padding-top: 28px; font-size: 0.9375rem; color: var(--ink-soft); }
+.wick-nodes li::before { content: ""; position: absolute; left: 50%; top: 4px; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%; background: var(--paper); border: 3px solid #c2cadb; }
+.wick-nodes li.done::before { background: var(--saffron); border-color: var(--saffron); }
+.wick-nodes li.done::after { content: ""; position: absolute; left: 50%; top: 10px; width: 6px; height: 11px; margin-left: -3px; border: solid var(--ink); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg) scale(.8); }
+.wick-nodes li.active { color: var(--ink); font-weight: 700; }
+.wick-nodes li.active::before { border-color: var(--saffron); background: #fff; box-shadow: 0 0 0 5px rgba(232,128,26,.22); }
+.wick-status { margin-top: 10px; font-size: 1rem; min-height: 1.6em; }
+
+/* ---------- banners ---------- */
+.banner { border-left: 4px solid var(--gold); background: rgba(201,150,43,.12); padding: 10px 14px; margin: 14px 0 0; font-size: 0.9375rem; white-space: pre-wrap; }
+.banner.err { border-left-color: var(--brick); background: rgba(176,57,42,.1); }
+.banner ul { margin: 0; padding-left: 18px; }
+
+/* ---------- tabs ---------- */
+.tabs { display: flex; gap: 4px; margin: 28px 0 0; border-bottom: 1.5px solid var(--line); }
+.tab { background: none; border: 0; padding: 10px 16px; margin-bottom: -1.5px; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 700; color: var(--ink-soft); }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--saffron); }
+.panel { padding-top: 26px; }
+
+/* ---------- script editor ---------- */
+.verify { border-left: 4px solid var(--saffron); padding: 4px 0 4px 16px; margin-bottom: 28px; }
+.verify h3 { font-size: 1rem; margin-bottom: 6px; }
+.verify ul { margin: 0; padding-left: 18px; }
+.verify li { margin-bottom: 4px; }
+.scene { display: grid; grid-template-columns: 64px 1fr; gap: 6px 14px; padding: 22px 0; border-top: 1px solid var(--line); }
+.scene:first-of-type { border-top: 0; padding-top: 4px; }
+.scene .num { font-size: 1.375rem; font-weight: 700; color: var(--ink-soft); line-height: 1.2; }
+.scene .num small { display: block; font-size: 0.75rem; font-weight: 400; margin-top: 2px; }
+.seg { display: inline-flex; justify-self: start; border: 1.5px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--field); }
+.seg label { padding: 6px 14px; cursor: pointer; font-size: 0.9375rem; }
+.seg label:has(input:checked) { background: var(--ink); color: #fff; }
+.seg label:has(input:focus-visible) { outline: 3px solid var(--saffron); outline-offset: -3px; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.scene .vis { margin-top: 12px; display: grid; gap: 10px; }
+.scene .vis .row { gap: 12px; }
+.scene .tools { margin-top: 10px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.scene .tools .pause { display: flex; align-items: center; gap: 8px; margin-right: auto; font-size: 0.9375rem; }
+.scene .tools .pause input { width: 74px; padding: 5px 8px; }
+.scene.personal { background: rgba(43,122,88,.07); border-left: 4px solid var(--lotus); padding-left: 12px; margin-left: -16px; }
+.scene .tag { display: inline-block; font-size: 0.75rem; font-weight: 700; color: var(--lotus); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+.scene .voice { margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 0.9375rem; }
+.scene .voice audio { height: 34px; max-width: 260px; }
+.scene .voice .rec { color: var(--brick); font-weight: 700; }
+.touch { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1.5px solid var(--line); border-radius: var(--radius); margin-bottom: 22px; background: var(--field); }
+.touch > div { padding: 12px 14px; border-left: 1px solid var(--line); }
+.touch > div:first-child { border-left: 0; }
+.touch strong { display: block; font-size: 1.25rem; }
+.touch .ok { color: var(--lotus); }
+.touch .low { color: var(--brick); }
+.settings-row { display: flex; gap: 18px; align-items: end; flex-wrap: wrap; margin-bottom: 18px; }
+.settings-row > div { min-width: 200px; }
+.settings-row .check { margin: 0 0 10px; }
+.savebar { position: sticky; bottom: 0; margin: 24px -12px 0; padding: 14px 12px; background: rgba(236,239,244,.96); border-top: 1.5px solid var(--line); display: flex; gap: 12px; align-items: center; flex-wrap: wrap; backdrop-filter: blur(4px); }
+.savebar .grow { margin-right: auto; }
+details.revise { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 16px; }
+details.revise summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
+details.revise textarea { margin: 12px 0; }
+
+/* ---------- video / publish ---------- */
+.video-wrap { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+video { width: 100%; background: #000; border-radius: 4px; max-height: 70vh; }
+video.vertical { max-width: 320px; }
+.thumb { width: 100%; border-radius: 4px; display: block; }
+.facts { margin: 14px 0 0; padding: 0; list-style: none; font-size: 0.9375rem; }
+.facts li { padding: 7px 0; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 12px; }
+.links { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin-top: 12px; }
+.empty { padding: 28px 0; max-width: 520px; }
+.empty p { margin-bottom: 16px; }
+.pub-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 36px; align-items: start; }
+.footer-preview { white-space: pre-wrap; font-size: 0.875rem; color: var(--ink-soft); border-left: 3px solid var(--line); padding: 4px 0 4px 12px; margin-top: 8px; }
+.yt-box { border-top: 1px solid var(--line); padding-top: 14px; margin-bottom: 18px; }
+.yt-box .state { font-weight: 700; margin-bottom: 6px; }
+.result { border-left: 4px solid var(--lotus); background: rgba(43,122,88,.1); padding: 12px 16px; margin-bottom: 20px; }
+
+/* ---------- activity & setup ---------- */
+.log { font-size: 0.9375rem; max-height: 55vh; overflow-y: auto; border-top: 1px solid var(--line); }
+.log div { display: grid; grid-template-columns: 150px 1fr; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.log time { color: var(--ink-soft); font-size: 0.8125rem; padding-top: 2px; }
+.checks { border-top: 1px solid var(--line); }
+.checks .item { display: grid; grid-template-columns: 26px 220px 1fr; gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.checks .item .dot { margin-top: 8px; width: 12px; height: 12px; }
+.checks .dot.warn { background: var(--gold); }
+.checks .dot.ok { background: var(--lotus); }
+.checks .dot.err { background: var(--brick); }
+code { background: rgba(22,33,62,.08); padding: 1px 6px; border-radius: 3px; font-size: 0.875em; }
+
+/* ---------- Facebook / Instagram ---------- */
+.social-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.caption-preview { white-space: pre-wrap; border: 1.5px solid var(--line); border-radius: var(--radius); background: var(--field); padding: 12px 14px; font-size: 0.9375rem; line-height: 1.6; max-height: 360px; overflow-y: auto; }
+.posted { border-left: 4px solid var(--lotus); background: rgba(43,122,88,.1); padding: 10px 14px; margin-bottom: 14px; }
+.meta-steps { margin: 8px 0 16px; padding-left: 20px; font-size: 0.9375rem; }
+.meta-steps li { margin-bottom: 6px; }
+
+/* ---------- AI writer ---------- */
+.providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 10px 0 18px; }
+.prov { border: 1.5px solid var(--line); border-radius: var(--radius); padding: 12px 14px; cursor: pointer; background: var(--field); display: block; }
+.prov:has(input:checked) { border-color: var(--saffron-deep); box-shadow: 0 0 0 3px rgba(232,128,26,.18); }
+.prov input { position: absolute; opacity: 0; pointer-events: none; }
+.prov:has(input:focus-visible) { outline: 3px solid var(--saffron); outline-offset: 2px; }
+.prov strong { display: block; }
+.prov .k { font-size: 0.8125rem; font-weight: 700; }
+.prov .k.ok { color: var(--lotus); }
+.prov .k.no { color: var(--ink-soft); }
+.prov p { font-size: 0.875rem; color: var(--ink-soft); margin-top: 4px; }
+.llm-box { border-top: 1px solid var(--line); padding-top: 18px; margin-bottom: 30px; }
+.writer-pick { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: -10px 0 22px; font-size: 0.9375rem; }
+.writer-pick select { width: auto; padding: 5px 8px; }
+
+/* ---------- festivals ---------- */
+.fests { margin: 0 0 28px; border-top: 1px solid var(--line); }
+.fest { display: grid; grid-template-columns: 92px 1fr auto; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); }
+.fest .when { font-size: 0.875rem; color: var(--ink-soft); }
+.fest .when strong { display: block; color: var(--ink); font-size: 1rem; }
+.fest .urgent { color: var(--brick); }
+.fest .btn.quiet { margin: 0; }
+
+/* ---------- ideas ---------- */
+.ideas { margin: 16px 0 0; border-top: 1px solid var(--line); }
+.idea { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.idea input { margin-top: 6px; accent-color: var(--saffron-deep); width: 17px; height: 17px; }
+.idea .why { color: var(--ink-soft); font-size: 0.875rem; }
+
+#toast { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 9; max-width: min(420px, calc(100vw - 40px)); }
+.toast { background: var(--ink); color: #fff; padding: 11px 16px; border-radius: var(--radius); box-shadow: 0 6px 24px rgba(10,16,36,.28); font-size: 0.9375rem; }
+.toast.err { background: var(--brick); }
+
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .tabs { overflow-x: auto; }
+  .tab { white-space: nowrap; }
+  .rail { position: static; height: auto; max-height: 52vh; }
+  main { padding: 22px 18px 80px; }
+  .row.c2, .row.c3, .video-wrap, .pub-grid { grid-template-columns: 1fr; }
+  .checks .item { grid-template-columns: 22px 1fr; }
+  .checks .item .detail { grid-column: 2; }
+  .scene { grid-template-columns: 1fr; }
+  .scene .num { display: flex; gap: 10px; align-items: baseline; }
+  .log div { grid-template-columns: 1fr; gap: 0; }
+  .fest { grid-template-columns: 80px 1fr; }
+  .providers { grid-template-columns: 1fr; }
+  .social-grid { grid-template-columns: 1fr; }
+  .fest .btn { grid-column: 2; justify-self: start; }
+  .touch { grid-template-columns: 1fr; }
+  .touch > div { border-left: 0; border-top: 1px solid var(--line); }
+  .touch > div:first-child { border-top: 0; }
+  .scene.personal { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flame { animation: none; transition: none; }
+  .wick-fill { transition: none; }
+}
+</style>
+<link rel="stylesheet" href="/studio.css">
+<link rel="stylesheet" href="/theme.css">
+</head>
+<body>
+<div class="app">
+  <aside class="rail" aria-label="Videos">
+    <div class="brand">
+      <span class="om" aria-hidden="true">ॐ</span>
+      <div><strong>Video studio</strong><small id="channel">Hindi spirituality channel</small></div>
+    </div>
+    <button class="btn primary" id="newBtn" type="button">New video</button>
+    <nav class="nav" aria-label="Tools">
+      <button class="nav-item" id="studioBtn" type="button" title="Edit the picture and sound of a video"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>Studio</button>
+      <button class="nav-item" id="createBtn" type="button" title="Make a thumbnail, voice-over, music, picture or video clip on its own"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>Create</button>
+      <button class="nav-item" id="statsBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Channel stats</button>
+    </nav>
+    <div class="rail-label" id="railLabel">Recent videos</div>
+    <nav class="joblist" id="jobList" aria-label="Your videos"></nav>
+    <div class="rail-foot">
+      <button class="nav-item" id="setupBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>Setup and checks <span class="dot" id="setupDot"></span></button>
+      <button class="nav-item" id="themeBtn" type="button" aria-label="Switch between light and dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg><span id="themeLabel">Dark mode</span></button>
+      <div class="palettes" role="group" aria-label="Colour theme"><span>Theme</span>
+        <button class="swatch saffron" type="button" data-palette="saffron" title="Saffron" aria-label="Saffron theme"></button>
+        <button class="swatch indigo" type="button" data-palette="indigo" title="Royal indigo" aria-label="Royal indigo theme"></button>
+        <button class="swatch tulsi" type="button" data-palette="tulsi" title="Tulsi green" aria-label="Tulsi green theme"></button>
+        <button class="swatch lotus" type="button" data-palette="lotus" title="Lotus pink" aria-label="Lotus pink theme"></button>
+      </div>
+    </div>
+  </aside>
+  <main id="main"></main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const clone = (o) => JSON.parse(JSON.stringify(o));
+
+const S = {
+  view: "new", jobId: null, job: null, jobs: [], tab: "script",
+  health: null, options: null,
+  draft: null, dirtyScript: false, metaDraft: null,
+  ideas: [], busyIdeas: false, festivals: [], ideasFor: "",
+  setupTab: "ai", llmForm: null, llmModels: {}, llmBusy: "", llmTest: null,
+  metaForm: { app_id: "", app_secret: "", user_token: "" }, metaBusy: false, socialDraft: null, socialBusy: false,
+  form: { topic: "", kind: "upanishad_story", format: "long", minutes: 8, voice: "", notes: "", captions: true, music: true, auto_render: false, ownScript: false, scriptJson: "", repeat: 108, ai_images: false },
+};
+
+/* ------------------------------------------------------------------ api --- */
+async function api(path, opts = {}) {
+  const init = { method: opts.method || "GET", headers: { "X-Dashboard": "1" } };
+  if (opts.body !== undefined) { init.headers["Content-Type"] = "application/json"; init.body = JSON.stringify(opts.body); }
+  const r = await fetch(path, init);
+  let data = null;
+  try { data = await r.json(); } catch (e) { /* no body */ }
+  if (!r.ok) {
+    const d = data && data.detail;
+    const msg = Array.isArray(d) ? d.map((x) => x.msg).join("; ") : d || `Request failed (${r.status})`;
+    const err = new Error(msg); err.status = r.status; throw err;
+  }
+  return data;
+}
+function toast(msg, isErr = false) {
+  const el = document.createElement("div");
+  el.className = "toast" + (isErr ? " err" : "");
+  el.textContent = msg;
+  $("#toast").appendChild(el);
+  setTimeout(() => el.remove(), isErr ? 7000 : 3200);
+}
+const guard = (fn) => async (...a) => { try { await fn(...a); } catch (e) { toast(e.message, true); } };
+
+/* --------------------------------------------------------------- helpers --- */
+const KIND_LABEL = () => Object.fromEntries(Object.entries((S.options || {}).kinds || {}).map(([k, v]) => [k, v.label]));
+const isBusy = (j) => j && (["generating_script", "rendering", "uploading"].includes(j.status) || !!j.social_uploading);
+const pct = (p) => Math.round((p || 0) * 100);
+const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
+const words = (t) => (t.trim() ? t.trim().split(/\s+/).length : 0);
+
+function statusText(j) {
+  switch (j.status) {
+    case "new": return "Not started";
+    case "generating_script": return j.stage || "Writing script";
+    case "script_ready": return "Script ready to review";
+    case "rendering": return `${j.stage || "Rendering"} ${pct(j.progress)}%`;
+    case "rendered": return "Video ready";
+    case "uploading": return `Uploading ${pct(j.progress)}%`;
+    case "uploaded": return "Uploaded";
+    default: return j.status;
+  }
+}
+function dotClass(j) {
+  if (j.error && !isBusy(j)) return "err";
+  if (isBusy(j)) return "run";
+  if (j.status === "uploaded") return "ok";
+  return "";
+}
+function stageInfo(j) {
+  const w = j.progress || 0;
+  switch (j.status) {
+    case "generating_script": return { c: 0, w, label: j.stage || "Writing the script" };
+    case "script_ready": return { c: 1, w: 0, label: "The script is ready. Read it, fix anything that is wrong, then approve it to render." };
+    case "rendering": return { c: 2, w, label: `${j.stage || "Rendering"} (${pct(w)}%)` };
+    case "rendered": return { c: 3, w: 0, label: "The video is ready. Watch it through, then upload." };
+    case "uploading": return { c: 3, w, label: `Uploading to YouTube (${pct(w)}%)` };
+    case "uploaded": return { c: 4, w: 0, label: "Uploaded to YouTube." };
+    default: return { c: 0, w: 0, label: "Waiting to write the script." };
+  }
+}
+
+/* ------------------------------------------------------------------ rail --- */
+function railNav() {
+  const cur = { studioBtn: S.view === "job" && S.tab === "studio", createBtn: S.view === "create", statsBtn: S.view === "stats", setupBtn: S.view === "setup" };
+  for (const [id, on] of Object.entries(cur)) { const b = $("#" + id); if (b) b.setAttribute("aria-current", on ? "true" : "false"); }
+  $("#newBtn").setAttribute("aria-current", S.view === "new" ? "true" : "false");
+}
+function renderRail() {
+  railNav();
+  const list = $("#jobList");
+  if (!S.jobs.length) { list.innerHTML = `<p class="empty-rail">No videos yet. Start with a topic.</p>`; return; }
+  list.innerHTML = S.jobs.map((j) => `
+    <button class="job" type="button" data-id="${esc(j.id)}" ${S.view === "job" && S.jobId === j.id ? 'aria-current="true"' : ""}>
+      <span class="t hi" style="font-size:.95rem;line-height:1.45">${esc(j.title || j.topic)}</span>
+      <span class="s"><span class="dot ${dotClass(j)}"></span>${esc(statusText(j))}${j.format === "short" ? " · Short" : ""}</span>
+    </button>`).join("");
+}
+function renderHealthDot() {
+  const h = S.health; const dot = $("#setupDot");
+  if (!h) return;
+  const critical = !h.ffmpeg || !h.font.ok;
+  const missing = !h.anthropic || !h.pexels || !h.youtube.connected;
+  dot.className = "dot " + (critical ? "err" : missing ? "run" : "ok");
+  if (h.channel) $("#channel").textContent = h.channel;
+}
+
+/* -------------------------------------------------------------- new view --- */
+function renderNew() {
+  const f = S.form, o = S.options || { kinds: {}, formats: {}, voices: {} };
+  const claudeOk = S.health ? S.health.anthropic : true;
+  const kindOpts = Object.entries(o.kinds).map(([k, v]) => `<option value="${k}" ${f.kind === k ? "selected" : ""}>${esc(v.label)}</option>`).join("");
+  const fmtOpts = Object.entries(o.formats).map(([k, v]) => `<option value="${k}" ${f.format === k ? "selected" : ""}>${esc(v.label)}</option>`).join("");
+  const voiceOpts = `<option value="">Default (${esc(o.default_voice || "")})</option>` + Object.entries(o.voices).map(([k, v]) => `<option value="${k}" ${f.voice === k ? "selected" : ""}>${esc(v)}</option>`).join("");
+  const short = f.format === "short";
+  const jaap = !!(o.kinds[f.kind] || {}).jaap;
+  const checked = S.ideas.filter((i) => i.checked).length;
+
+  const fests = S.festivals.slice(0, 6);
+  const fmtDay = (d) => new Date(d + "T00:00:00").toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  const ideasFest = S.festivals.find((x) => x.date === S.ideasFor);
+  $("#main").innerHTML = `
+  <header class="page-head"><h1>New video</h1><p class="muted">Give a topic. The AI writer drafts the Hindi script, then you review it before anything is rendered.</p></header>
+  ${writerPickHTML()}
+  ${fests.length ? `
+  <section aria-label="Coming festivals">
+    <h2 style="margin-bottom:4px">Coming up</h2>
+    <p class="hint" style="margin:0 0 10px">Search interest rises in the days before a festival, so publish early. Dates vary by region: confirm with your panchang.</p>
+    <div class="fests">${fests.map((x) => `
+      <div class="fest">
+        <span class="when"><strong>${esc(fmtDay(x.date))}</strong>${x.days_left === 0 ? "today" : `in ${x.days_left} days`}</span>
+        <span><span class="hi">${esc(x.name)} · ${esc(x.hindi)}</span><br><span class="hint ${x.urgent ? "urgent" : ""}" style="margin:0">${x.urgent ? "Make it now to publish in time" : `Have it ready by ${esc(fmtDay(x.plan_by))}`}</span></span>
+        <button class="btn quiet" type="button" data-act="festIdeas" data-date="${esc(x.date)}" ${S.busyIdeas || !claudeOk ? "disabled" : ""}>Suggest topics</button>
+      </div>`).join("")}</div>
+  </section>` : ""}
+  <form id="newForm" autocomplete="off">
+    <div class="field">
+      <label class="f" for="topic">Topic</label>
+      <textarea id="topic" data-bind="form" data-f="topic" rows="2" placeholder="Nachiketa and Yama, from the Katha Upanishad">${esc(f.topic)}</textarea>
+      <div class="actions" style="margin-top:8px">
+        <button class="btn quiet" type="button" data-act="ideas" ${S.busyIdeas ? "disabled" : ""}>${S.busyIdeas ? "Thinking of topics..." : "Suggest topics"}</button>
+      </div>
+      ${S.ideas.length ? `
+      ${ideasFest ? `<p class="hint">Topics for ${esc(ideasFest.name)} (${esc(fmtDay(ideasFest.date))})</p>` : ""}
+      <div class="ideas" role="group" aria-label="Suggested topics">
+        ${S.ideas.map((i, n) => `<label class="idea"><input type="checkbox" data-bind="idea" data-i="${n}" ${i.checked ? "checked" : ""}><span><span class="hi">${esc(i.topic)}</span>${i.why ? `<span class="why"><br>${esc(i.why)}</span>` : ""}</span></label>`).join("")}
+      </div>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn secondary" type="button" data-act="useIdea" ${checked === 1 ? "" : "disabled"}>Use selected topic</button>
+        <button class="btn secondary" type="button" data-act="batch" ${checked > 0 ? "" : "disabled"}>Write scripts for ${checked} selected</button>
+      </div>` : ""}
+    </div>
+
+    <div class="row c3 field">
+      <div><label class="f" for="kind">Type of video</label><select id="kind" data-bind="form" data-f="kind">${kindOpts}</select></div>
+      <div><label class="f" for="format">Format</label><select id="format" data-bind="form" data-f="format">${fmtOpts}</select></div>
+      ${jaap ? `<div><label class="f" for="repeat">Repetitions</label><select id="repeat" data-bind="form" data-f="repeat">${(o.jaap_counts || [108]).map((c) => `<option value="${c}" ${+f.repeat === c ? "selected" : ""}>${c}</option>`).join("")}</select></div>`
+      : `<div><label class="f" for="minutes">Minutes</label><input id="minutes" type="number" min="1" max="20" step="1" data-bind="form" data-f="minutes" value="${short ? 1 : esc(f.minutes)}" ${short ? "disabled" : ""}></div>`}
+    </div>
+    <div class="field">
+      <label class="f" for="voice">Voice</label>
+      <select id="voice" data-bind="form" data-f="voice">${voiceOpts}</select>
+    </div>
+    <div class="field">
+      <label class="f" for="notes">Notes for the writer (optional)</label>
+      <textarea id="notes" data-bind="form" data-f="notes" rows="2" placeholder="Include the story of the three boons. Keep the tone gentle for children.">${esc(f.notes)}</textarea>
+    </div>
+
+    <div class="field">
+      <label class="check"><input type="checkbox" data-bind="form" data-f="captions" ${f.captions ? "checked" : ""}><span>Burn Hindi captions into the video</span></label>
+      <label class="check"><input type="checkbox" data-bind="form" data-f="music" ${f.music ? "checked" : ""}><span>Add background music</span></label>
+      <label class="check"><input type="checkbox" data-bind="form" data-f="ai_images" ${f.ai_images ? "checked" : ""}><span>AI pictures for every scene, with the same characters throughout<span class="hint"><br>The AI writer plans them after the script. You check the characters and start drawing in the Studio.</span></span></label>
+      <label class="check"><input type="checkbox" data-bind="form" data-f="auto_render" ${f.auto_render ? "checked" : ""}>
+        <span>Render as soon as the script is written<span class="hint"><br>Skips your review. Shlokas and meanings should always be checked before publishing.</span></span></label>
+    </div>
+
+    ${claudeOk ? "" : `<div class="banner" role="alert">No AI writer is connected yet. <button class="btn quiet" type="button" data-act="goSetup">Choose Claude, Gemini, Groq or OpenAI and add a key</button>, or paste your own script below.</div>`}
+    <div class="actions">
+      <button class="btn primary" type="button" data-act="create" ${claudeOk ? "" : "disabled"}>Write script</button>
+      <button class="btn secondary" type="button" data-act="toggleOwn" aria-expanded="${f.ownScript}">Use my own script</button>
+    </div>
+
+    ${f.ownScript ? `
+    <div class="field" style="margin-top:24px">
+      <label class="f" for="scriptJson">Script JSON</label>
+      <textarea id="scriptJson" data-bind="form" data-f="scriptJson" rows="10" spellcheck="false" placeholder='{ "title": "...", "description": "...", "tags": [], "thumbnail_text": "...", "scenes": [ { "narration": "...", "visual": { "type": "stock", "query": "sunrise over river" } } ] }'>${esc(f.scriptJson)}</textarea>
+      <p class="hint">Each scene needs <code>narration</code> and a <code>visual</code> of type <code>stock</code> (with <code>query</code>) or <code>slide</code> (with <code>heading</code>, <code>text</code>, <code>sub</code>).</p>
+      <div class="actions" style="margin-top:12px"><button class="btn primary" type="button" data-act="createOwn">Create from my script</button></div>
+    </div>` : ""}
+  </form>`;
+}
+
+/* -------------------------------------------------------------- job view --- */
+function trackerHTML(j) {
+  const { c, w, label } = stageInfo(j);
+  const head = Math.min(3, c + w);
+  const names = ["Script", "Review", "Render", "Upload"];
+  const done = c >= 4;
+  return `
+  <div class="wick" style="--head:${(head / 3 * 100).toFixed(1)}%" aria-hidden="true">
+    <div class="wick-track"><div class="wick-fill"></div>
+      <svg class="flame ${isBusy(j) ? "" : "rest"}" viewBox="0 0 24 32"><path d="M12 1c1 6 8 9 8 18a8 8 0 0 1-16 0c0-4 2-6 3-8 .5 2 1.5 3 2.5 3C9 9 10 5 12 1z" fill="#e8801a"/><path d="M12 14c.5 3 4 4.5 4 8a4 4 0 0 1-8 0c0-2 1-3 1.5-4 .5 1 1 1.5 1.5 1.5-.3-2 .3-3.5 1-5.5z" fill="#ffd88a"/></svg>
+    </div>
+    <ol class="wick-nodes">${names.map((n, i) => `<li class="${i < c ? "done" : i === c && !done ? "active" : ""}">${n}</li>`).join("")}</ol>
+  </div>
+  <p class="wick-status" role="status">${esc(label)}</p>`;
+}
+function bannersHTML(j) {
+  let h = "";
+  if (j.error) h += `<div class="banner err" role="alert">${esc(j.error)}</div>`;
+  if (j.warnings && j.warnings.length) h += `<div class="banner"><ul>${j.warnings.map((w) => `<li>${esc(w)}</li>`).join("")}</ul></div>`;
+  return h;
+}
+function renderJob() {
+  const j = S.job; if (!j) return;
+  const tabs = [["script", "Script"], ["studio", "Studio"], ["video", "Video"], ["publish", "YouTube"], ["social", "Facebook & Instagram"], ["activity", "Activity"]];
+  $("#main").innerHTML = `
+  <header class="page-head">
+    <h1 class="hi">${esc((j.metadata && j.metadata.title) || (j.script && j.script.title) || j.topic)}</h1>
+    <p class="muted">${esc(KIND_LABEL()[j.kind] || j.kind)}, ${j.format === "short" ? "Short (9:16)" : "long video (16:9)"}. Topic: ${esc(j.topic)}</p>
+  </header>
+  <section aria-label="Progress"><div id="tracker">${trackerHTML(j)}</div><div id="banners">${bannersHTML(j)}</div></section>
+  <div class="tabs" role="tablist">${tabs.map(([k, n]) => `<button class="tab" role="tab" type="button" data-act="tab" data-tab="${k}" aria-selected="${S.tab === k}">${n}</button>`).join("")}</div>
+  <section class="panel" id="panel" role="tabpanel">${panelHTML(j)}</section>`;
+  if (S.tab === "studio") studioAfterRender();
+  railNav();
+}
+function renderLive() {
+  const j = S.job; if (!j) return;
+  const t = $("#tracker"); if (t) t.innerHTML = trackerHTML(j);
+  const b = $("#banners"); if (b) b.innerHTML = bannersHTML(j);
+  if (S.tab === "activity") { const l = $("#logbox"); if (l) { const atEnd = l.scrollTop + l.clientHeight >= l.scrollHeight - 30; l.innerHTML = logHTML(j); if (atEnd) l.scrollTop = l.scrollHeight; } }
+  const sb = $("#saveBtns"); if (sb) sb.querySelectorAll("button").forEach((x) => { if (x.dataset.needIdle) x.disabled = isBusy(j); });
+  if (typeof studioLive === "function") studioLive(j);
+}
+function panelHTML(j) {
+  if (S.tab === "script") return scriptHTML(j);
+  if (S.tab === "video") return videoHTML(j);
+  if (S.tab === "publish") return publishHTML(j);
+  if (S.tab === "social") return socialHTML(j);
+  if (S.tab === "studio") return studioPanel(j);
+  return `<div class="log" id="logbox">${logHTML(j)}</div>
+  <div class="actions" style="margin-top:28px"><button class="btn quiet danger" type="button" data-act="delJob" ${isBusy(j) ? "disabled" : ""}>Delete this video and its files</button></div>`;
+}
+function logHTML(j) {
+  if (!j.log.length) return `<p class="muted" style="padding:12px 0">Nothing has happened yet.</p>`;
+  return j.log.map((l) => `<div><time>${esc(l.t)}</time><span>${esc(l.msg)}</span></div>`).join("");
+}
+
+/* script tab */
+function sceneHTML(sc, i) {
+  const v = sc.visual, n = S.draft.scenes.length;
+  const rep = sc.repeat || 1;
+  const secs = Math.round(words(sc.narration) / 1.97 * rep + (rep > 1 ? 0.8 * rep : 0));
+  const recording = S.rec && S.rec.i === i;
+  const voiceUrl = sc.voice_file ? `/voice/${encodeURIComponent(S.jobId)}/${encodeURIComponent(sc.voice_file)}` : "";
+  return `
+  <article class="scene${sc.personal ? " personal" : ""}" aria-label="Scene ${i + 1}">
+    <div class="num">${i + 1}<small>about ${secs}s</small></div>
+    <div>
+      ${sc.personal ? `<span class="tag">Your reflection</span>
+      <p class="hint" style="margin:0 0 8px">Write this in your own words: a personal experience, how you understand the teaching, or how you practise it. ${sc.hint ? `<span class="hi">Idea: ${esc(sc.hint)}</span>` : ""}</p>` : ""}
+      <label class="sr" for="n${i}">Narration for scene ${i + 1}</label>
+      <textarea id="n${i}" class="hi" rows="3" data-bind="scene" data-i="${i}" data-f="narration" lang="hi" ${sc.personal ? 'placeholder="मेरे अनुभव में..."' : ""}>${esc(sc.narration)}</textarea>
+      <div class="voice">
+        ${recording ? `<span class="rec" role="status">Recording... read the narration above</span><button class="btn secondary" type="button" data-act="recStop">Stop and use</button><button class="btn quiet" type="button" data-act="recCancel">Cancel</button>`
+        : sc.voice_file ? `<span>Your voice:</span><audio controls preload="none" src="${voiceUrl}"></audio><button class="btn quiet" type="button" data-act="recStart" data-i="${i}">Record again</button><button class="btn quiet danger" type="button" data-act="voiceRemove" data-i="${i}">Use AI voice instead</button>`
+        : `<button class="btn quiet" type="button" data-act="recStart" data-i="${i}" ${S.rec ? "disabled" : ""}>Record my voice</button>
+           <label class="btn quiet" style="cursor:pointer">Upload audio<input type="file" accept="audio/*" data-voice-file="${i}" style="display:none"></label>
+           <span class="hint" style="margin:0">AI voice is used until you add yours.</span>`}
+      </div>
+      <div class="vis">
+        <div class="seg" role="radiogroup" aria-label="Visual for scene ${i + 1}">
+          <label><input type="radio" name="vt${i}" value="stock" data-bind="scene" data-i="${i}" data-f="v.type" ${v.type === "stock" ? "checked" : ""}>Stock footage</label>
+          <label><input type="radio" name="vt${i}" value="slide" data-bind="scene" data-i="${i}" data-f="v.type" ${v.type === "slide" ? "checked" : ""}>Text slide</label>
+          <label><input type="radio" name="vt${i}" value="image" data-bind="scene" data-i="${i}" data-f="v.type" ${v.type === "image" ? "checked" : ""}>AI picture</label>
+        </div>
+        ${v.type === "image" ? `
+          <div><label class="f" for="ip${i}">What the picture shows</label><textarea id="ip${i}" rows="2" data-bind="scene" data-i="${i}" data-f="v.prompt">${esc(v.prompt || "")}</textarea>
+          <p class="hint">Draw it, and pick the characters, in the Studio.</p></div>` : v.type === "stock" ? `
+          <div><label class="f" for="q${i}">Search words (English)</label><input id="q${i}" type="text" data-bind="scene" data-i="${i}" data-f="v.query" value="${esc(v.query)}" placeholder="sunrise over river"></div>` : `
+          <div class="row c2">
+            <div><label class="f" for="h${i}">Heading</label><input id="h${i}" type="text" class="hi" data-bind="scene" data-i="${i}" data-f="v.heading" value="${esc(v.heading)}"></div>
+            <div><label class="f" for="s${i}">Meaning or note under the text</label><input id="s${i}" type="text" class="hi" data-bind="scene" data-i="${i}" data-f="v.sub" value="${esc(v.sub)}"></div>
+          </div>
+          <div><label class="f" for="t${i}">Main text (one line per row)</label><textarea id="t${i}" class="hi" rows="3" data-bind="scene" data-i="${i}" data-f="v.text">${esc(v.text)}</textarea></div>`}
+      </div>
+      <div class="tools">
+        <label class="pause">Pause after <input type="number" min="0" max="25" step="0.5" data-bind="scene" data-i="${i}" data-f="pause_after" value="${esc(sc.pause_after || 0)}"> seconds
+        ${S.job && (S.options.kinds[S.job.kind] || {}).jaap ? `<span style="margin-left:14px">Chant <input type="number" min="1" max="108" step="1" data-bind="scene" data-i="${i}" data-f="repeat" value="${esc(sc.repeat || 1)}"> times</span>` : ""}</label>
+        <button class="btn quiet" type="button" data-act="addScene" data-i="${i}">Add scene below</button>
+        <button class="btn quiet danger" type="button" data-act="delScene" data-i="${i}" ${n <= 1 ? "disabled" : ""}>Remove scene</button>
+      </div>
+    </div>
+  </article>`;
+}
+/* How much of this video is the owner's own work. YouTube does not pay for "automated voiceovers
+   over stock images", so make the human contribution visible while editing. */
+function touchHTML(sc) {
+  const n = sc.scenes.length;
+  const own = sc.scenes.filter((s) => s.voice_file).length;
+  const personal = sc.scenes.filter((s) => s.personal);
+  const written = personal.filter((s) => s.narration.trim()).length;
+  const ownPct = n ? Math.round(own / n * 100) : 0;
+  const weak = !own && !written;
+  return `
+  <h3 style="font-size:1rem;margin-bottom:8px">Your contribution</h3>
+  <div class="touch">
+    <div><span class="muted">Scenes in your voice</span><strong class="${own ? "ok" : "low"}">${own} of ${n} (${ownPct}%)</strong></div>
+    <div><span class="muted">Personal reflection</span><strong class="${personal.length && written === personal.length ? "ok" : "low"}">${personal.length ? `${written} of ${personal.length} written` : "None"}</strong></div>
+    <div><span class="muted">Look</span><strong>${esc((S.options.themes || {})[S.job.theme_effective] || "")}</strong></div>
+  </div>
+  ${weak ? `<div class="banner" style="margin:-8px 0 20px">This video is fully automated so far. YouTube does not pay for AI voice-overs over stock footage with nothing added. Record some scenes in your own voice or write your reflection.</div>` : ""}`;
+}
+function settingsHTML(j) {
+  const themes = (S.options && S.options.themes) || {};
+  const auto = themes[j.theme_effective] || "";
+  const busy = isBusy(j);
+  return `
+  <div class="settings-row">
+    <div><label class="f" for="theme">Look of slides and thumbnail</label>
+      <select id="theme" data-setting="theme" ${busy ? "disabled" : ""}><option value="" ${!j.theme ? "selected" : ""}>Automatic (${esc(auto)})</option>${Object.entries(themes).map(([k, v]) => `<option value="${k}" ${j.theme === k ? "selected" : ""}>${esc(v)}</option>`).join("")}</select></div>
+    <label class="check"><input type="checkbox" data-setting="captions" ${j.captions !== false ? "checked" : ""} ${busy ? "disabled" : ""}><span>Captions</span></label>
+    <label class="check"><input type="checkbox" data-setting="music" ${j.music !== false ? "checked" : ""} ${busy ? "disabled" : ""}><span>Music</span></label>
+  </div>`;
+}
+function scriptHTML(j) {
+  if (j.status === "generating_script" && !S.draft) return `<div class="empty"><p>${esc(j.stage || "The AI writer is writing the script")}. This usually takes under a minute.</p></div>`;
+  if (!S.draft) return `<div class="empty"><p>There is no script yet.</p><button class="btn primary" type="button" data-act="regen">Write script</button></div>`;
+  const sc = S.draft;
+  const total = sc.scenes.reduce((a, s) => a + words(s.narration), 0);
+  const notes = sc.verify_notes || [];
+  const busy = isBusy(j);
+  return `
+  ${notes.length ? `<div class="verify"><h3>Check these before you publish</h3><ul>${notes.map((n) => `<li class="hi" style="font-size:1rem;line-height:1.55">${esc(n)}</li>`).join("")}</ul></div>` : ""}
+  <div id="touch">${touchHTML(sc)}</div>
+  ${settingsHTML(j)}
+  <p class="muted" style="margin-bottom:6px" id="scriptStats">${sc.scenes.length} scenes, about ${total} words, roughly ${(total / 118).toFixed(1)} minutes of narration.</p>
+  <div id="scenes">${sc.scenes.map(sceneHTML).join("")}</div>
+  <div class="savebar" id="saveBtns">
+    <span class="grow muted" id="dirtyNote">${S.dirtyScript ? "You have unsaved changes." : ""}</span>
+    <button class="btn secondary" type="button" data-act="discard" data-need-idle="1" ${S.dirtyScript && !busy ? "" : "disabled"}>Discard changes</button>
+    <button class="btn secondary" type="button" data-act="saveScript" data-need-idle="1" ${S.dirtyScript && !busy ? "" : "disabled"}>Save changes</button>
+    <button class="btn secondary" type="button" data-act="openStudio">Edit in Studio</button>
+    <button class="btn primary" type="button" data-act="approve" data-need-idle="1" ${busy ? "disabled" : ""}>${j.outputs && j.outputs.video ? "Render again" : "Approve and render"}</button>
+  </div>
+  <details class="revise">
+    <summary>Ask the AI writer to revise the script</summary>
+    <label class="sr" for="fb">What should change</label>
+    <textarea id="fb" rows="3" placeholder="Make the ending shorter. Explain 'Atman' more simply."></textarea>
+    <button class="btn secondary" type="button" data-act="revise" data-need-idle="1" ${busy ? "disabled" : ""}>Revise script</button>
+    <p class="hint">Revising replaces the current script, including any unsaved edits.</p>
+  </details>`;
+}
+
+/* video tab */
+function videoHTML(j) {
+  const o = j.outputs || {};
+  if (!o.video) return `<div class="empty"><p>No video yet. Approve the script to render it.</p><button class="btn secondary" type="button" data-act="tab" data-tab="script">Go to script</button></div>`;
+  const v = `?v=${encodeURIComponent(j.updated)}`;
+  const base = `/files/${encodeURIComponent(j.id)}/output/`;
+  return `
+  <div class="video-wrap">
+    <div><video controls preload="metadata" class="${j.format === "short" ? "vertical" : ""}" src="${base}video.mp4${v}" ${o.thumbnail && j.format !== "short" ? `poster="${base}thumbnail.jpg${v}"` : ""}></video></div>
+    <div>
+      ${j.format !== "short" ? `<img class="thumb" alt="Thumbnail" src="${base}thumbnail.jpg${v}">` : ""}
+      <ul class="facts">
+        <li><span>Length</span><span>${mmss(o.duration)}</span></li>
+        <li><span>File size</span><span>${o.size_mb} MB</span></li>
+        <li><span>Music</span><span>${esc(o.music)}</span></li>
+      </ul>
+      <div class="links">
+        <button class="btn secondary" type="button" data-act="openStudio" style="margin-bottom:8px">Edit in Studio</button>
+        <a class="btn quiet" href="${base}video.mp4?download=1">Download video</a>
+        <a class="btn quiet" href="${base}thumbnail.jpg?download=1">Download thumbnail</a>
+        <a class="btn quiet" href="${base}captions.srt?download=1">Download captions (SRT)</a>
+        ${o.srt_en ? `<a class="btn quiet" href="${base}captions.en.srt?download=1">Download English subtitles (SRT)</a>` : ""}
+      </div>
+      <div style="margin-top:14px">
+        ${j.translating ? `<p class="muted" role="status">Translating subtitles to English...</p>`
+        : `<button class="btn secondary" type="button" data-act="translate" ${isBusy(j) || !(S.health || {}).anthropic ? "disabled" : ""}>${o.srt_en ? "Translate again" : "Create English subtitles"}</button>
+           <p class="hint">Reaches viewers outside India. Uploaded to YouTube as a caption track with the video.</p>`}
+      </div>
+    </div>
+  </div>
+  ${j.format === "long" && j.script ? shortPickerHTML(j) : ""}`;
+}
+/* Make a Short from scenes of this long video: more uploads from one script, and a funnel to the full video. */
+function shortPickerHTML(j) {
+  const pick = S.shortPick || [];
+  const est = (sc) => words(sc.narration) / 1.97;
+  const total = pick.reduce((a, i) => a + est(j.script.scenes[i]) + 0.6, 0);
+  const rows = j.script.scenes.map((sc, i) => {
+    const off = !sc.narration.trim() || (sc.repeat || 1) > 1;
+    return `<label class="idea"><input type="checkbox" data-short="${i}" ${pick.includes(i) ? "checked" : ""} ${off ? "disabled" : ""}><span><span class="hi">${i + 1}. ${esc(sc.narration.slice(0, 140) || "(empty)")}${sc.narration.length > 140 ? "..." : ""}</span><span class="why"><br>about ${Math.round(est(sc))}s${sc.visual.type === "slide" ? " · slide" : ""}${sc.voice_file ? " · your voice" : ""}</span></span></label>`;
+  }).join("");
+  return `
+  <section id="shortPick" style="margin-top:36px" aria-label="Make a Short">
+    <h2>Make a Short from this video</h2>
+    <p class="hint">Pick scenes that work on their own, such as a shloka and its meaning. Start with a strong line. The Short links back to the full video once that is uploaded.</p>
+    <div class="ideas">${rows}</div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn secondary" type="button" data-act="makeShort" ${pick.length ? "" : "disabled"}>Create Short from ${pick.length} scene${pick.length === 1 ? "" : "s"}</button>
+      <span class="${total > 58 ? "urgent" : "muted"}" style="${total > 58 ? "color:var(--brick)" : ""}">${pick.length ? `about ${Math.round(total)}s${total > 58 ? ", too long for a Short (58s)" : ""}` : ""}</span>
+    </div>
+  </section>`;
+}
+
+/* publish tab */
+function publishHTML(j) {
+  const o = j.outputs || {}, m = S.metaDraft || {}, h = S.health || { youtube: {} }, yt = h.youtube || {};
+  if (!o.video) return `<div class="empty"><p>Render the video before publishing.</p><button class="btn secondary" type="button" data-act="tab" data-tab="script">Go to script</button></div>`;
+  const busy = isBusy(j);
+  const done = j.youtube;
+  let ytState;
+  if (!yt.configured) ytState = `<p class="state">YouTube is not set up</p><p class="hint">Add <code>config/client_secret.json</code> (an OAuth Desktop app client). The README has the steps.</p>`;
+  else if (!yt.connected) ytState = `<p class="state">Not connected</p><div class="actions"><button class="btn secondary" type="button" data-act="ytConnect" ${yt.connecting ? "disabled" : ""}>${yt.connecting ? "Waiting for the browser window..." : "Connect YouTube"}</button></div>${yt.error ? `<div class="banner err">${esc(yt.error)}</div>` : ""}`;
+  else ytState = `<p class="state">Connected to YouTube</p><button class="btn quiet" type="button" data-act="ytDisconnect">Disconnect</button>${yt.manage ? "" : `<p class="hint">Reconnect once (Disconnect, then Connect) to also upload caption tracks and read video stats.</p>`}`;
+  return `
+  ${done ? `<div class="result"><strong>Uploaded as ${esc(done.privacy)}.</strong><div class="links"><a class="btn quiet" target="_blank" rel="noopener" href="${esc(done.url)}">Open on YouTube</a><a class="btn quiet" target="_blank" rel="noopener" href="${esc(done.studio_url || "")}">Open in YouTube Studio</a></div></div>` : ""}
+  <div class="pub-grid">
+    <div>
+      <div class="field"><label class="f" for="mt">Title</label><input id="mt" type="text" class="hi" maxlength="100" data-bind="meta" data-f="title" value="${esc(m.title)}"><p class="hint"><span id="tlen">${(m.title || "").length}</span> of 100 characters</p></div>
+      <div class="field"><label class="f" for="md">Description</label><textarea id="md" class="hi" rows="6" data-bind="meta" data-f="description">${esc(m.description)}</textarea>
+        <p class="hint">These lines are added below your description automatically:</p><div class="footer-preview hi" style="font-size:.9rem;line-height:1.6">${esc(j.description_footer)}</div></div>
+      <div class="field"><label class="f" for="mg">Tags</label><input id="mg" type="text" data-bind="meta" data-f="tags" value="${esc((m.tags || []).join(", "))}"><p class="hint">Separate tags with commas.</p></div>
+    </div>
+    <div>
+      <div class="yt-box">${ytState}</div>
+      <div class="field"><label class="f" for="mp">Visibility</label>
+        <select id="mp" data-bind="meta" data-f="privacy">${["private", "unlisted", "public"].map((p) => `<option value="${p}" ${m.privacy === p ? "selected" : ""}>${p[0].toUpperCase() + p.slice(1)}</option>`).join("")}</select>
+        <p class="hint">Until Google has audited your API project, YouTube keeps API uploads private. You can make the video public in YouTube Studio.</p></div>
+      <div class="field"><label class="f" for="ma">Publish at (optional)</label><input id="ma" type="datetime-local" data-bind="meta" data-f="publish_at" value="${esc(m.publish_local || "")}"><p class="hint">A scheduled video uploads as private and goes public at this time.</p></div>
+      <label class="check"><input type="checkbox" data-bind="meta" data-f="synthetic" ${m.synthetic !== false ? "checked" : ""}><span>Tell YouTube this video uses a synthetic voice</span></label>
+      <div class="field"><label class="f" for="mk">Made for kids</label><select id="mk" data-bind="meta" data-f="made_for_kids"><option value="false" ${m.made_for_kids ? "" : "selected"}>No, not made for kids</option><option value="true" ${m.made_for_kids ? "selected" : ""}>Yes, made for kids</option></select></div>
+      <label class="check" style="margin-top:18px"><input type="checkbox" data-act="review" ${j.reviewed ? "checked" : ""} ${busy ? "disabled" : ""}>
+        <span>I watched this video to the end${(j.script && j.script.verify_notes || []).length ? ` and checked all ${(j.script.verify_notes || []).length} items in <em>Check these before you publish</em>` : ""}.<span class="hint"><br>Required before upload. Editing the script or rendering again clears it.</span></span></label>
+      ${h.upload_limit ? `<p class="hint" style="margin:0 0 12px">${h.uploads_today} of ${h.upload_limit} uploads used in the last 24 hours. Spacing uploads out looks less like mass production.</p>` : ""}
+      <button class="btn primary" type="button" data-act="upload" ${busy || !yt.connected || !j.reviewed ? "disabled" : ""}>${done ? "Upload another copy" : "Upload to YouTube"}</button>
+      ${!yt.connected ? `<p class="hint">Connect YouTube first.</p>` : ""}
+    </div>
+  </div>`;
+}
+
+/* ----------------------------------------------------------- setup view --- */
+function renderSetup() {
+  const h = S.health;
+  if (!h) { $("#main").innerHTML = `<div class="skeleton" aria-busy="true"><i></i><i></i><i></i></div>`; return; }
+  const yt = h.youtube;
+  const rows = [
+    [h.ffmpeg ? "ok" : "err", "ffmpeg", h.ffmpeg ? "Found." : "Not found. Install it (for example <code>brew install ffmpeg</code> or <code>sudo apt install ffmpeg</code>) and restart."],
+    [h.font.ok ? (h.font.raqm ? "ok" : "warn") : "err", "Hindi font", h.font.ok ? `Using ${esc(h.font.path)}. ${h.font.raqm ? "Text shaping is available." : "Text shaping (Raqm) is off, so conjunct letters and matras render wrongly. On Windows run <code>pip install zstandard</code> then <code>python tools/get_fribidi.py</code> and restart. Elsewhere run <code>pip install -U pillow</code>."}` : esc(h.font.error)],
+    [h.llm.ready ? "ok" : "warn", "AI writer (scripts)", h.llm.ready ? `${esc(h.llm.label)}, model <code>${esc(h.llm.model)}</code>. Change it in the AI writer tab.` : "No key for the selected AI writer. Set one up in the AI writer tab. Without it you can still paste your own script."],
+    [h.pexels ? "ok" : "warn", "Pexels (stock footage)", h.pexels ? "API key set." : "Add <code>PEXELS_API_KEY</code> to <code>.env</code> (free at pexels.com/api). Without it, scenes get plain gradient backgrounds."],
+    [h.music_files ? "ok" : "warn", "Music", h.music_files ? `${h.music_files} file(s) in <code>assets/music</code>.` : "No files in <code>assets/music</code>, so a plain generated drone is used. Add royalty-free tracks you have the right to use on YouTube."],
+    [yt.connected ? "ok" : "warn", "YouTube", !yt.configured ? "Add <code>config/client_secret.json</code>, then connect. See the README." : yt.connected ? `Connected. <button class="btn quiet" type="button" data-act="ytDisconnect">Disconnect</button>` : `Not connected. <button class="btn quiet" type="button" data-act="ytConnect">Connect YouTube</button>`],
+    [h.tts.engine === "edge" ? "warn" : h.audio.engines[h.tts.engine].has_key ? "ok" : "err", "Voice engine", h.tts.engine === "edge"
+      ? "Microsoft Edge TTS (free, but no published commercial terms). For a monetized channel, pick another engine in the Voice and music tab (Sarvam, Gemini or ElevenLabs), or record your own voice."
+      : h.audio.engines[h.tts.engine].has_key ? `${esc(h.audio.engines[h.tts.engine].label)}. Check its terms for monetized use.` : `${esc(h.audio.engines[h.tts.engine].label)} is selected but has no API key. Add it in the Voice and music tab.`],
+    ["ok", "Pronunciation fixes", h.tts.pronunciations ? `${h.tts.pronunciations} word(s) in <code>config/pronunciation.json</code>.` : "None yet. Add words the voice says wrongly to <code>config/pronunciation.json</code> (word: how to say it)."],
+    [h.channel ? "ok" : "warn", "Channel name", h.channel ? `Shown on thumbnails: ${esc(h.channel)}.` : "Optional. Set <code>CHANNEL_NAME</code> in <code>.env</code> to print it on thumbnails."],
+  ];
+  const worst = rows.some((r) => r[0] === "err") ? "err" : rows.some((r) => r[0] === "warn") ? "warn" : "ok";
+  const au = h.audio, engOk = !au || au.engines[au.engine].has_key;
+  const tabs = [
+    ["ai", "AI writer and pictures", h.llm.ready ? "ok" : "warn"],
+    ["voice", "Voice and music", engOk ? "ok" : "err"],
+    ["social", "Social accounts", (h.meta || {}).connected ? "ok" : "warn"],
+    ["checks", "System checks", worst],
+  ];
+  if (!tabs.some((t) => t[0] === S.setupTab)) S.setupTab = "ai";
+  const body = { ai: () => llmHTML(h) + imagesSetupHTML(h), voice: () => audioSetupHTML(h), social: () => metaSetupHTML(h),
+    checks: () => `<div class="checks">${rows.map(([s, n, d]) => `<div class="item"><span class="dot ${s}"></span><strong>${n}</strong><span class="detail">${d}</span></div>`).join("")}</div>` }[S.setupTab]();
+  $("#main").innerHTML = `
+  <header class="page-head"><h1>Setup and checks</h1><p class="muted">Connect the services the pipeline uses. A green dot means the section is ready, amber means optional or incomplete, red needs attention.</p></header>
+  <div class="tabs setup-tabs" role="tablist" aria-label="Setup sections">${tabs.map(([k, l, st]) =>
+    `<button class="tab" type="button" role="tab" aria-selected="${S.setupTab === k}" data-act="setupTab" data-tab="${k}"><span class="dot ${st}"></span>${l}</button>`).join("")}</div>
+  ${body}`;
+}
+
+/* ---------------------------------------------------- Facebook / Instagram --- */
+function socialFrom(j) {
+  const so = j.social || {};
+  return { caption: so.caption || "", hashtags: (so.hashtags || []).join(" ") };
+}
+function socialHTML(j) {
+  const o = j.outputs || {}, h = S.health || {}, m = h.meta || {}, d = S.socialDraft || socialFrom(j);
+  if (!j.script) return `<div class="empty"><p>Write the script first.</p></div>`;
+  const busy = isBusy(j), posts = j.social_posts || {};
+  const vertical = j.format === "short";
+  const dur = o.duration || 0;
+  const fbKind = vertical && dur >= 3 && dur <= 90 ? "Reel" : "Page video";
+  const tags = d.hashtags.split(/[\s,]+/).filter(Boolean);
+  const pv = (j.social_preview || {}).instagram || "";
+  const conn = m.connected
+    ? `<p class="state">Posting as <strong>${esc(m.page_name)}</strong>${m.instagram ? ` and Instagram <strong>@${esc(m.instagram)}</strong>` : " (no Instagram account linked)"}</p>${m.expired ? `<div class="banner err">The login expired on ${esc(m.expires)}. Connect again on the Setup page.</div>` : `<p class="hint">Login valid until ${esc(m.expires)}.</p>`}`
+    : `<p class="state">Not connected</p><p class="hint">Connect your Facebook Page and Instagram account first.</p><button class="btn secondary" type="button" data-act="goSetup">Open Setup</button>`;
+  const done = Object.entries(posts).map(([k, v]) => `<div class="posted"><strong>Posted to ${k === "facebook" ? "Facebook" : "Instagram"}</strong> (${esc(v.kind)}, ${esc(v.at)}) <a class="btn quiet" target="_blank" rel="noopener" href="${esc(v.url)}">Open</a></div>`).join("");
+  return `
+  ${done}
+  <div class="social-grid">
+    <div>
+      <div class="field"><label class="f" for="soCap">Caption</label>
+        <textarea id="soCap" class="hi" rows="8" data-social="caption" lang="hi">${esc(d.caption)}</textarea>
+        <p class="hint">The first line shows before "more", so make it count. Ask a question to invite comments.</p></div>
+      <div class="field"><label class="f" for="soTags">Hashtags</label>
+        <input id="soTags" type="text" data-social="hashtags" value="${esc(d.hashtags)}" placeholder="उपनिषद upanishad spirituality">
+        <p class="hint"><span id="tagCount">${tags.length}</span> of 30 allowed. 10 to 15 specific tags work best.</p></div>
+      <div class="actions"><button class="btn secondary" type="button" data-act="socialWrite" ${S.socialBusy || busy || !(h.llm || {}).ready ? "disabled" : ""}>${S.socialBusy ? "Writing..." : "Write caption with AI"}</button></div>
+      <h3 style="font-size:1rem;margin:22px 0 6px">Instagram preview</h3>
+      <div class="caption-preview hi" id="soPreview">${esc(pv)}</div>
+      <p class="hint">${pv.length} of 2,200 characters. Facebook gets the same text plus your links from <code>config/description_links.txt</code>.</p>
+    </div>
+    <div>
+      <div class="yt-box">${conn}</div>
+      ${!o.video ? `<p class="hint">Render the video first.</p>` : `
+      <label class="check"><input type="checkbox" id="soFb" ${m.connected ? "checked" : "disabled"}><span>Facebook Page, as a ${fbKind}${fbKind === "Page video" && vertical ? " (Reels must be 3 to 90 seconds)" : ""}</span></label>
+      <label class="check"><input type="checkbox" id="soIg" ${m.connected && m.instagram && vertical ? "checked" : "disabled"}><span>Instagram Reel${vertical ? "" : `<span class="hint"><br>Needs a vertical video. <button class="btn quiet" type="button" data-act="tab" data-tab="video">Make a Short</button> from this one.</span>`}</span></label>
+      <label class="check" style="margin-top:14px"><input type="checkbox" data-act="review" ${j.reviewed ? "checked" : ""} ${busy ? "disabled" : ""}>
+        <span>I watched this video to the end and checked the items to verify.<span class="hint"><br>Required before posting anywhere.</span></span></label>
+      ${j.social_uploading ? `<p class="muted" role="status">Posting to ${j.social_uploading === "facebook" ? "Facebook" : "Instagram"}... this can take a few minutes.</p>` : ""}
+      <button class="btn primary" type="button" data-act="socialPost" ${busy || !m.connected || !j.reviewed ? "disabled" : ""}>Post now</button>
+      <p class="hint">Posts go live immediately and publicly.</p>`}
+    </div>
+  </div>`;
+}
+let socialTimer = null;
+async function saveSocial() {
+  const d = S.socialDraft; if (!d || !S.jobId) return;
+  const j = await api(`/api/jobs/${S.jobId}/social`, { method: "PUT", body: { caption: d.caption, hashtags: d.hashtags } });
+  S.job = j;
+  const pv = $("#soPreview"); if (pv) pv.textContent = (j.social_preview || {}).instagram || "";
+}
+function imagesSetupHTML(h) {
+  const im = h.images; if (!im) return "";
+  const f = S.imgForm || (S.imgForm = { provider: im.provider, model: im.providers[im.provider].model, quality: im.quality });
+  const info = im.providers[f.provider], models = (S.imgModels || {})[f.provider] || [];
+  return `
+  <section class="llm-box" aria-label="AI pictures">
+    <h2>AI pictures</h2>
+    <p class="hint">Draws a picture for each scene with the same characters throughout (Studio, AI pictures). Uses the same API keys as the AI writer above.${im.forced ? " <strong>Forced to the placeholder by IMAGES_FORCE_PROVIDER.</strong>" : ""}</p>
+    <div class="providers" role="radiogroup" aria-label="Image provider">${Object.entries(im.providers).map(([k, v]) => `
+      <label class="prov"><input type="radio" name="imgProv" value="${k}" data-img="provider" ${f.provider === k ? "checked" : ""}>
+        <strong>${esc(v.label)}${im.provider === k ? " (in use)" : ""}</strong>
+        <span class="pill k ${v.has_key ? "ok" : "no"}">${k === "placeholder" ? "Free" : v.has_key ? "Key saved" : "No key: add it above"}</span>
+        <p>${esc(v.note)}</p></label>`).join("")}</div>
+    <div class="row c2">
+      <div class="field"><label class="f" for="imgModel">Model</label>
+        <input id="imgModel" type="text" list="imgModelList" data-img="model" value="${esc(f.model)}" spellcheck="false" ${f.provider === "placeholder" ? "disabled" : ""}>
+        <datalist id="imgModelList">${models.map((m) => `<option value="${esc(m)}">`).join("")}</datalist>
+        <p class="hint">Default: <code>${esc(info.default_model)}</code>.${f.provider !== "placeholder" ? ` <button class="btn quiet" type="button" data-act="imgModels" ${info.has_key ? "" : "disabled"}>${models.length ? `${models.length} models loaded` : "Load available models"}</button>` : ""}</p></div>
+      <div class="field"><label class="f" for="imgQ">Quality</label><select id="imgQ" data-img="quality">${Object.entries(im.qualities).map(([k, v]) => `<option value="${k}" ${f.quality === k ? "selected" : ""}>${esc(v)}</option>`).join("")}</select></div>
+    </div>
+    <button class="btn primary" type="button" data-act="imgSave">Use ${esc(info.label)}</button>
+  </section>`;
+}
+function metaSetupHTML(h) {
+  const m = h.meta || {}, f = S.metaForm;
+  if (m.connected) return `
+  <section class="llm-box" aria-label="Facebook and Instagram">
+    <h2>Facebook & Instagram</h2>
+    <p style="margin:8px 0">Connected as <strong>${esc(m.user_name)}</strong>. Login valid until ${esc(m.expires)}${m.expired ? " <strong style=\"color:var(--brick)\">(expired: connect again)</strong>" : ""}.</p>
+    <div class="field" style="max-width:420px"><label class="f" for="metaPage">Post to this Facebook Page</label>
+      <select id="metaPage" data-meta-page="1">${m.pages.map((pg) => `<option value="${esc(pg.id)}" ${pg.id === m.page_id ? "selected" : ""}>${esc(pg.name)}${pg.ig_username ? ` (Instagram @${esc(pg.ig_username)})` : " (no Instagram linked)"}</option>`).join("")}</select></div>
+    <button class="btn quiet danger" type="button" data-act="metaDisconnect">Disconnect</button>
+  </section>`;
+  return `
+  <section class="llm-box" aria-label="Facebook and Instagram">
+    <h2>Facebook & Instagram</h2>
+    <p class="hint">One-time setup, about 10 minutes. Your Instagram must be a Business or Creator account linked to your Facebook Page.</p>
+    <ol class="meta-steps">
+      <li>At <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener">developers.facebook.com/apps</a>, create an app (type <em>Business</em>). In <em>App settings, Basic</em>, copy the App ID and App Secret.</li>
+      <li>Open <a href="https://developers.facebook.com/tools/explorer" target="_blank" rel="noopener">Graph API Explorer</a>, choose your app, and add these permissions: <code>${esc((m.permissions || []).join(", "))}</code>.</li>
+      <li>Click <em>Generate Access Token</em>, allow access to your Page and Instagram account, and copy the token.</li>
+    </ol>
+    <div class="row c2">
+      <div class="field"><label class="f" for="metaApp">App ID</label><input id="metaApp" type="text" data-meta="app_id" value="${esc(f.app_id)}" autocomplete="off"></div>
+      <div class="field"><label class="f" for="metaSecret">App Secret</label><input id="metaSecret" type="password" data-meta="app_secret" value="${esc(f.app_secret)}" autocomplete="off"><p class="hint">Used once to get a long-lived login, not stored.</p></div>
+    </div>
+    <div class="field"><label class="f" for="metaTok">User access token</label><input id="metaTok" type="password" data-meta="user_token" value="${esc(f.user_token)}" autocomplete="off"></div>
+    <button class="btn primary" type="button" data-act="metaConnect" ${S.metaBusy ? "disabled" : ""}>${S.metaBusy ? "Connecting..." : "Connect"}</button>
+  </section>`;
+}
+
+/* ------------------------------------------------- voice engine, clones, music --- */
+function audioForm() {
+  const a = S.health.audio;
+  if (!S.audForm) S.audForm = { engine: a.engine, voice: a.voice, music: a.music_provider, keys: {}, cloneName: "", consent: false };
+  return S.audForm;
+}
+function audioSetupHTML(h) {
+  const a = h.audio; if (!a) return "";
+  const f = audioForm();
+  const keyField = (id, label, has, url) => `<div class="field"><label class="f" for="aud_${id}">${label}</label>
+    <input id="aud_${id}" type="password" autocomplete="off" data-aud-key="${id}" value="${esc(f.keys[id] || "")}" placeholder="${has ? "Saved. Paste a new key to replace it." : "Paste your key"}">
+    <p class="hint"><a href="${esc(url)}" target="_blank" rel="noopener">${esc(url.replace("https://", ""))}</a>. Saved to <code>.env</code> on this computer only.</p></div>`;
+  const clones = Object.entries(a.cloned);
+  const needEleven = f.engine === "elevenlabs" || f.music === "elevenlabs";
+  return `
+  <section class="llm-box" aria-label="Voice and music">
+    <h2>Voice and music</h2>
+    <p class="hint">Choose who reads the narration and who makes AI music. You can also clone your own voice (ElevenLabs).</p>
+    <div class="providers" role="radiogroup" aria-label="Voice engine">${Object.entries(a.engines).map(([k, v]) => `
+      <label class="prov"><input type="radio" name="audEngine" value="${k}" data-aud="engine" ${f.engine === k ? "checked" : ""}>
+        <strong>${esc(v.label)}${a.engine === k ? " (in use)" : ""}</strong>
+        <span class="pill k ${v.has_key ? "ok" : "no"}">${v.has_key ? (k === "edge" ? "No key needed" : "Key saved") : "No key yet"}</span></label>`).join("")}</div>
+    <div class="row c2">
+      ${f.engine === "gemini" ? keyField("gemini", "Gemini API key (shared with the AI writer)", a.engines.gemini.has_key, "https://aistudio.google.com/apikey") : ""}
+      ${f.engine === "sarvam" ? keyField("sarvam", "Sarvam API key", a.engines.sarvam.has_key, "https://dashboard.sarvam.ai") : ""}
+      ${needEleven ? keyField("elevenlabs", "ElevenLabs API key", a.engines.elevenlabs.has_key, "https://elevenlabs.io/app/settings/api-keys") : ""}
+      <div class="field"><label class="f" for="audMusic">Music maker</label>
+        <select id="audMusic" data-aud="music">${Object.entries(a.music_providers).map(([k, v]) => `<option value="${k}" ${f.music === k ? "selected" : ""}>${esc(v.label)}${v.has_key ? "" : " (no key)"}</option>`).join("")}</select></div>
+      ${f.music === "stability" ? keyField("stability", "Stability API key", a.music_providers.stability.has_key, "https://platform.stability.ai/account/keys") : ""}
+    </div>
+    <div class="actions"><button class="btn primary" type="button" data-act="audSave" ${S.audBusy ? "disabled" : ""}>${S.audBusy === "save" ? "Saving..." : "Save voice and music settings"}</button></div>
+    ${a.engine === f.engine && Object.keys(a.voices).length ? `<div class="field" style="margin-top:14px"><label class="f" for="audVoice">Default voice</label>
+      <select id="audVoice" data-aud="voice">${Object.entries(a.voices).map(([k, v]) => `<option value="${esc(k)}" ${f.voice === k ? "selected" : ""}>${esc(v)}</option>`).join("")}</select>
+      <p class="hint">Used for new videos. You can still pick another voice for each video.</p></div>` : ""}
+    <h3 style="font-size:.9375rem;margin:18px 0 4px">Clone your voice (ElevenLabs)</h3>
+    <p class="hint" style="margin:0 0 8px">Upload 1 to 3 minutes of clean speech with no music or noise. The clone then appears in the voice list when the engine is ElevenLabs. Only clone your own voice, or one you have written permission for. Needs a paid ElevenLabs plan.</p>
+    ${clones.length ? `<ul class="facts" style="max-width:560px">${clones.map(([id, n]) => `<li><span>${esc(n)}</span><button class="btn quiet danger" type="button" data-act="audCloneDelete" data-id="${esc(id)}" style="margin:0">Delete</button></li>`).join("")}</ul>` : ""}
+    <div class="row c2" style="margin-top:8px">
+      <div class="field"><label class="f" for="audCloneName">Name for this voice</label>
+        <input id="audCloneName" type="text" maxlength="40" data-aud="cloneName" value="${esc(f.cloneName)}" placeholder="My voice"></div>
+      <div class="field"><label class="f">Recording</label>
+        <label class="btn secondary file">${S.audBusy === "clone" ? "Cloning..." : "Choose a recording"}<input type="file" accept="audio/*" data-aud-clone ${S.audBusy ? "disabled" : ""}></label></div>
+    </div>
+    <label class="check"><input type="checkbox" data-aud="consent" ${f.consent ? "checked" : ""}><span>This is my own voice, or I have the speaker's permission to clone it.</span></label>
+  </section>`;
+}
+
+/* ------------------------------------------------------------- AI writer --- */
+function llmForm() {
+  const l = S.health.llm;
+  if (!S.llmForm) S.llmForm = { provider: l.provider, model: l.providers[l.provider].model, key: "" };
+  return S.llmForm;
+}
+function llmHTML(h) {
+  const l = h.llm, f = llmForm(), info = l.providers[f.provider];
+  const models = S.llmModels[f.provider] || [];
+  const t = S.llmTest;
+  return `
+  <section class="llm-box" aria-label="AI writer">
+    <h2>AI writer</h2>
+    <p class="hint">Writes scripts, suggests topics and translates subtitles. Gemini and Groq have free tiers for testing (Groq's default is OpenAI's open GPT model).</p>
+    <div class="providers" role="radiogroup" aria-label="AI provider">${Object.entries(l.providers).map(([k, v]) => `
+      <label class="prov"><input type="radio" name="llmProv" value="${k}" data-llm="provider" ${f.provider === k ? "checked" : ""}>
+        <strong>${esc(v.label)}${l.provider === k ? " (in use)" : ""}</strong>
+        <span class="pill k ${v.has_key ? "ok" : "no"}">${v.has_key ? "Key saved" : "No key yet"}</span>
+        <p>${esc(v.note)}</p></label>`).join("")}</div>
+    <div class="row c2">
+      <div class="field"><label class="f" for="llmModel">Model</label>
+        <input id="llmModel" type="text" list="llmModelList" data-llm="model" value="${esc(f.model)}" placeholder="${esc(info.default_model)}" spellcheck="false">
+        <datalist id="llmModelList">${models.map((m) => `<option value="${esc(m)}">`).join("")}</datalist>
+        <p class="hint">Default: <code>${esc(info.default_model)}</code>.${f.provider !== "anthropic" ? ` <button class="btn quiet" type="button" data-act="llmModels" ${info.has_key && !S.llmBusy ? "" : "disabled"}>${S.llmBusy === "models" ? "Loading..." : models.length ? `${models.length} models loaded` : "Load available models"}</button>` : ""}</p></div>
+      <div class="field"><label class="f" for="llmKey">API key</label>
+        <input id="llmKey" type="password" autocomplete="off" data-llm="key" value="${esc(f.key)}" placeholder="${info.has_key ? "Saved. Paste a new key to replace it." : "Paste your key"}">
+        <p class="hint">Get one at <a href="${esc(info.key_url)}" target="_blank" rel="noopener">${esc(info.key_url.replace("https://", ""))}</a>. Saved to <code>.env</code> on this computer only.</p></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" type="button" data-act="llmSave" ${S.llmBusy ? "disabled" : ""}>${S.llmBusy === "save" ? "Saving..." : `Use ${esc(info.label)}`}</button>
+      <button class="btn secondary" type="button" data-act="llmTest" ${S.llmBusy || !l.ready ? "disabled" : ""}>${S.llmBusy === "test" ? "Testing..." : "Test the AI writer"}</button>
+    </div>
+    ${t ? (t.ok ? `<div class="result" style="margin-top:14px"><strong>${esc(t.provider)} (${esc(t.model)}) works</strong>, answered in ${t.seconds}s.${t.fallback ? " Your chosen model was overloaded, so this backup model answered." : ""} Sample topics:<ul style="margin:6px 0 0;padding-left:18px">${t.sample.map((i) => `<li class="hi">${esc(i.topic)}</li>`).join("")}</ul></div>`
+      : `<div class="banner err">${esc(t.error)}</div>`) : ""}
+  </section>`;
+}
+function writerPickHTML() {
+  const h = S.health; if (!h || !h.llm) return "";
+  const l = h.llm;
+  const opts = Object.entries(l.providers).map(([k, v]) => `<option value="${k}" ${l.provider === k ? "selected" : ""} ${v.has_key ? "" : "disabled"}>${esc(v.label)}${v.has_key ? "" : " (no key)"}</option>`).join("");
+  return `<div class="writer-pick"><label for="writerPick">AI writer</label><select id="writerPick" data-writer="1">${opts}</select>
+    <span class="muted">${esc(l.model)}</span><button class="btn quiet" type="button" data-act="goSetup">Change</button></div>`;
+}
+
+/* ------------------------------------------------------------ stats view --- */
+async function loadStats(refresh) {
+  S.statsBusy = true; renderStats();
+  try { S.stats = await api("/api/stats" + (refresh ? "?refresh=1" : "")); }
+  catch (e) { toast(e.message, true); }
+  finally { S.statsBusy = false; if (S.view === "stats") renderStats(); }
+}
+function renderStats() {
+  const st = S.stats, kinds = KIND_LABEL();
+  const nf = (n) => (n == null ? "–" : Number(n).toLocaleString());
+  let body;
+  if (!st) body = `<div class="skeleton" aria-busy="true" aria-label="Loading"><i></i><i></i><i></i><i class="big"></i></div>`;
+  else if (!st.videos.length) body = `<div class="empty-state"><strong>No uploaded videos yet</strong>Stats appear here after your first upload.</div>`;
+  else {
+    const kindRows = Object.entries(st.by_kind).sort((a, b) => b[1].avg_views - a[1].avg_views);
+    body = `
+    ${kindRows.length ? `<h2 style="margin-bottom:8px">What works</h2>
+    <ul class="facts" style="max-width:560px;margin-bottom:28px">${kindRows.map(([k, v]) => `<li><span>${esc(kinds[k] || k)} (${v.videos} video${v.videos === 1 ? "" : "s"})</span><span>${nf(v.avg_views)} views on average</span></li>`).join("")}</ul>` : ""}
+    <h2 style="margin-bottom:8px">Videos</h2>
+    <div class="log" style="max-height:none">${st.videos.map((v) => `
+      <div style="grid-template-columns:1fr auto">
+        <span><button class="btn quiet hi" type="button" data-act="openJob" data-id="${esc(v.id)}" style="text-align:left">${esc(v.title)}</button><br>
+          <span class="muted">${esc(kinds[v.kind] || v.kind)}${v.format === "short" ? " · Short" : ""} · uploaded ${esc(v.uploaded_at)} · your voice in ${v.own_voice_scenes} of ${v.scenes} scenes</span></span>
+        <span style="text-align:right"><strong>${nf(v.views)}</strong> views<br><span class="muted">${nf(v.likes)} likes · ${nf(v.comments)} comments</span></span>
+      </div>`).join("")}</div>
+    <p class="hint">${st.videos[0].at ? `Last updated ${esc(st.videos[0].at)}.` : "Not fetched yet."} Topic suggestions take your best videos into account.</p>`;
+  }
+  $("#main").innerHTML = `
+  <header class="page-head"><h1>Channel stats</h1><p class="muted">How your uploaded videos are doing. Use it to decide what to make next.</p></header>
+  ${st && st.error ? `<div class="banner err">${esc(st.error)}</div>` : ""}
+  ${st && !st.can_read && st.videos.length ? `<div class="banner">Reconnect YouTube once (Setup and checks: Disconnect, then Connect) to allow reading statistics.</div>` : ""}
+  <div class="actions" style="margin:18px 0 24px"><button class="btn secondary" type="button" data-act="statsRefresh" ${S.statsBusy || !(st && st.can_read) ? "disabled" : ""}>${S.statsBusy ? "Fetching..." : "Fetch latest numbers"}</button></div>
+  ${body}`;
+}
+
+/* ------------------------------------------------------------ navigation --- */
+function show(view, jobId) {
+  S.view = view;
+  if (view === "job") {
+    if (S.jobId !== jobId) studioReset();
+    S.jobId = jobId; S.job = null; S.draft = null; S.metaDraft = null; S.socialDraft = null; S.dirtyScript = false; S.shortPick = [];
+    $("#main").innerHTML = `<div class="skeleton" aria-busy="true" aria-label="Loading"><i></i><i></i><i></i><i class="big"></i></div>`;
+    loadJob(true).catch((e) => { toast(e.message, true); show("new"); });
+  } else if (view === "setup") { S.jobId = null; refreshHealth().then(renderSetup); renderSetup(); }
+  else if (view === "stats") { S.jobId = null; loadStats(false); }
+  else if (view === "create") { S.jobId = null; createEnter(); }
+  else { S.jobId = null; renderNew(); }
+  renderRail();
+}
+async function loadJob(first) {
+  if (!S.jobId) return;
+  const j = await api("/api/jobs/" + S.jobId);
+  handleJob(j, first);
+}
+function metaFrom(j) {
+  const m = clone(j.metadata || {});
+  if (m.publish_at) { const d = new Date(m.publish_at); if (!isNaN(d)) { const p = (n) => String(n).padStart(2, "0"); m.publish_local = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; } }
+  return m;
+}
+function handleJob(j, first) {
+  const prev = S.job; S.job = j;
+  const changed = first || !prev || prev.status !== j.status || prev.id !== j.id || !!prev.translating !== !!j.translating || (prev.social_uploading || "") !== (j.social_uploading || "") || (prev.previewing || "") !== (j.previewing || "") || !!prev.imaging !== !!j.imaging;
+  if (changed) {
+    const scriptJustWritten = prev && prev.status === "generating_script" && j.status !== "generating_script";
+    if (!S.draft || scriptJustWritten || !S.dirtyScript) { S.draft = j.script ? clone(j.script) : null; S.dirtyScript = false; }
+    if (!S.metaDraft || scriptJustWritten) S.metaDraft = metaFrom(j);
+    if (!S.socialDraft || scriptJustWritten) S.socialDraft = socialFrom(j);
+    if (prev && prev.social_uploading && !j.social_uploading) toast(j.error ? "Posting finished with errors" : "Posted");
+    if (prev && prev.status === "rendering" && j.status === "rendered") { S.tab = "video"; toast("Rendered"); }
+    if (prev && prev.status === "uploading" && j.status === "uploaded") { S.tab = "publish"; toast("Uploaded"); }
+    if (first && j.status === "rendered") S.tab = "video";
+    if (first && j.status === "script_ready") S.tab = "script";
+    if (first && j.status === "uploaded") S.tab = "publish";
+    if (first && S.pendingStudio) { S.pendingStudio = false; S.tab = "studio"; }
+    renderJob();
+    if (first && S.tab === "studio") studioEnter();
+  } else renderLive();
+}
+
+/* ---------------------------------------------------------------- events --- */
+const main = $("#main");
+function setPath(obj, path, value) {
+  const parts = path.split("."); let o = obj;
+  for (let i = 0; i < parts.length - 1; i++) o = o[parts[i]];
+  o[parts.at(-1)] = value;
+}
+main.addEventListener("input", (e) => bindInput(e, false));
+main.addEventListener("change", (e) => bindInput(e, true));
+let metaTimer = null;
+function bindInput(e, isChange) {
+  const t = e.target, kind = t.dataset.bind; if (!kind) return;
+  const val = t.type === "checkbox" ? t.checked : t.type === "number" ? (t.value === "" ? 0 : Number(t.value)) : t.value;
+  if (kind === "form") {
+    S.form[t.dataset.f] = val;
+    if (t.dataset.f === "repeat") S.form.repeat = Number(val);
+    if (isChange && (t.dataset.f === "kind" || t.dataset.f === "format")) {
+      const k = S.options.kinds[S.form.kind];
+      if (t.dataset.f === "kind") { S.form.minutes = k.default_minutes; if (S.form.kind === "quote") S.form.format = "short"; if (k.jaap) S.form.format = "long"; }
+      if (S.form.format === "short") S.form.minutes = 1; else if (S.form.minutes < 2) S.form.minutes = k.default_minutes;
+      renderNew();
+    }
+  } else if (kind === "idea") {
+    S.ideas[+t.dataset.i].checked = t.checked; if (isChange) renderNew();
+  } else if (kind === "scene") {
+    const sc = S.draft.scenes[+t.dataset.i]; const f = t.dataset.f;
+    // data-f uses "v." as shorthand for the scene's "visual" object.
+    setPath(sc, f.replace(/^v\./, "visual."), f === "pause_after" ? Math.max(0, Math.min(25, val || 0)) : f === "repeat" ? Math.max(1, Math.min(108, Math.round(val || 1))) : val);
+    markDirty();
+    if (f === "v.type" && isChange) rerenderScenes();
+    if (f === "narration") updateStats();
+  } else if (kind === "meta") {
+    const f = t.dataset.f;
+    if (f === "tags") S.metaDraft.tags = String(val).split(",").map((x) => x.trim()).filter(Boolean);
+    else if (f === "made_for_kids") S.metaDraft.made_for_kids = val === "true";
+    else if (f === "publish_at") { S.metaDraft.publish_local = val; S.metaDraft.publish_at = val ? new Date(val).toISOString() : ""; }
+    else S.metaDraft[f] = val;
+    if (f === "title") { const el = $("#tlen"); if (el) el.textContent = String(val.length); }
+    clearTimeout(metaTimer); metaTimer = setTimeout(() => saveMeta().catch(() => {}), 700);
+  }
+}
+function markDirty() {
+  S.dirtyScript = true;
+  const n = $("#dirtyNote"); if (n) n.textContent = "You have unsaved changes.";
+  document.querySelectorAll('#saveBtns [data-act="saveScript"], #saveBtns [data-act="discard"]').forEach((b) => (b.disabled = isBusy(S.job)));
+}
+function updateStats() {
+  const sc = S.draft; const total = sc.scenes.reduce((a, s) => a + words(s.narration), 0);
+  const el = $("#scriptStats"); if (el) el.textContent = `${sc.scenes.length} scenes, about ${total} words, roughly ${(total / 118).toFixed(1)} minutes of narration.`;
+  const tb = $("#touch"); if (tb) tb.innerHTML = touchHTML(sc);
+}
+function rerenderScenes() { const el = $("#scenes"); if (el) el.innerHTML = S.draft.scenes.map(sceneHTML).join(""); updateStats();  studioRefresh(); }
+async function saveMeta() {
+  const m = S.metaDraft; if (!m || !S.jobId) return;
+  const body = { title: m.title, description: m.description, tags: m.tags || [], privacy: m.privacy, publish_at: m.publish_at || "", made_for_kids: !!m.made_for_kids, synthetic: m.synthetic !== false };
+  const j = await api(`/api/jobs/${S.jobId}/metadata`, { method: "PUT", body: { metadata: body } });
+  S.job = j;
+}
+async function saveScript() {
+  const j = await api(`/api/jobs/${S.jobId}/script`, { method: "PUT", body: { script: S.draft } });
+  S.dirtyScript = false; S.draft = clone(j.script); S.job = j; renderJob(); toast("Script saved");
+}
+
+/* own voice: record in the browser or upload a file, then attach it to the scene and save */
+function audioExt(type) {
+  type = (type || "").toLowerCase();
+  if (type.includes("webm")) return "webm";
+  if (type.includes("ogg") || type.includes("opus")) return "ogg";
+  if (type.includes("mp4") || type.includes("m4a") || type.includes("aac")) return "m4a";
+  if (type.includes("wav")) return "wav";
+  if (type.includes("mpeg") || type.includes("mp3")) return "mp3";
+  return "";
+}
+async function attachVoice(i, blob, ext) {
+  if (!ext) throw new Error("Unsupported audio type. Use mp3, wav, m4a, ogg or webm.");
+  const r = await fetch(`/api/jobs/${S.jobId}/voice?ext=${ext}`, { method: "POST", headers: { "X-Dashboard": "1", "Content-Type": "application/octet-stream" }, body: blob });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.detail || `Upload failed (${r.status})`);
+  S.draft.scenes[i].voice_file = data.voice_file;
+  await saveScript();
+  toast("Your voice was added to scene " + (i + 1));
+}
+function stopTracks() { if (S.rec && S.rec.stream) S.rec.stream.getTracks().forEach((t) => t.stop()); }
+main.addEventListener("change", guard(async (e) => {
+  const t = e.target;
+  if (t.dataset.voiceFile !== undefined && t.files && t.files[0]) {
+    const f = t.files[0]; const ext = audioExt(f.type) || (f.name.split(".").pop() || "").toLowerCase();
+    await attachVoice(+t.dataset.voiceFile, f, ext);
+  } else if (t.dataset.short !== undefined) {
+    const i = +t.dataset.short; S.shortPick = (S.shortPick || []).filter((x) => x !== i);
+    if (t.checked) S.shortPick.push(i);
+    const el = $("#shortPick"); if (el) el.outerHTML = shortPickerHTML(S.job);
+  } else if (t.dataset.setting) {
+    const body = { [t.dataset.setting]: t.type === "checkbox" ? t.checked : t.value };
+    if (S.dirtyScript) await saveScript();
+    S.job = await api(`/api/jobs/${S.jobId}/settings`, { method: "PUT", body }); renderJob(); toast("Saved. Render again to apply.");
+  }
+}));
+
+main.addEventListener("input", (e) => {
+  const t = e.target; if (!t.dataset.llm || !S.llmForm) return;
+  if (t.dataset.llm === "model" || t.dataset.llm === "key") S.llmForm[t.dataset.llm] = t.value;
+});
+main.addEventListener("change", guard(async (e) => {
+  const t = e.target;
+  if (t.dataset.llm === "provider") {
+    const l = S.health.llm; S.llmForm = { provider: t.value, model: l.providers[t.value].model, key: "" }; S.llmTest = null; renderSetup();
+  } else if (t.dataset.writer) {
+    const l = S.health.llm;
+    await api("/api/llm", { method: "PUT", body: { provider: t.value, model: l.providers[t.value].model, api_key: "" } });
+    S.llmForm = null; await refreshHealth(); renderNew(); toast(`Now using ${S.health.llm.label}`);
+  }
+}));
+
+main.addEventListener("input", (e) => {
+  const t = e.target;
+  if (t.dataset.meta) S.metaForm[t.dataset.meta] = t.value;
+  if (t.dataset.social && S.socialDraft) {
+    S.socialDraft[t.dataset.social] = t.value;
+    if (t.dataset.social === "hashtags") { const c = $("#tagCount"); if (c) c.textContent = String(t.value.split(/[\s,]+/).filter(Boolean).length); }
+    clearTimeout(socialTimer); socialTimer = setTimeout(() => saveSocial().catch(() => {}), 700);
+  }
+});
+main.addEventListener("change", (e) => {
+  const t = e.target; if (!t.dataset.img || !S.health || !S.health.images) return;
+  const f = S.imgForm;
+  if (t.dataset.img === "provider") { S.imgForm = { provider: t.value, model: S.health.images.providers[t.value].model, quality: f.quality }; renderSetup(); }
+  else f[t.dataset.img] = t.value;
+});
+main.addEventListener("input", (e) => { if (e.target.dataset.img === "model" && S.imgForm) S.imgForm.model = e.target.value; });
+main.addEventListener("input", (e) => {
+  const t = e.target; if (!S.audForm) return;
+  if (t.dataset.audKey) S.audForm.keys[t.dataset.audKey] = t.value;
+  else if (t.dataset.aud === "cloneName") S.audForm.cloneName = t.value;
+});
+main.addEventListener("change", guard(async (e) => {
+  const t = e.target, f = S.audForm; if (!f) return;
+  if (t.dataset.aud === "engine" || t.dataset.aud === "music") { f[t.dataset.aud] = t.value; renderSetup(); }
+  else if (t.dataset.aud === "voice") f.voice = t.value;
+  else if (t.dataset.aud === "consent") f.consent = t.checked;
+  else if (t.dataset.audClone !== undefined && t.files && t.files[0]) {
+    const file = t.files[0];
+    if (!f.consent) { toast("Tick the permission box first.", true); t.value = ""; return; }
+    S.audBusy = "clone"; renderSetup();
+    try {
+      await stPostRaw(`/api/audio/clone?name=${enc(f.cloneName.trim())}&ext=${enc(audioExt(file.type) || (file.name.split(".").pop() || "").toLowerCase())}&consent=true`, file);
+      f.cloneName = ""; f.consent = false; toast("Voice cloned. Choose ElevenLabs and pick it from the voice list.");
+    } finally { S.audBusy = ""; await refreshHealth(); renderSetup(); }
+  }
+}));
+main.addEventListener("change", guard(async (e) => {
+  if (!e.target.dataset.metaPage) return;
+  await api("/api/meta/page", { method: "POST", body: { page_id: e.target.value } }); await refreshHealth(); renderSetup(); toast("Page selected");
+}));
+
+const actions = {
+  tab: (t) => {
+    if (S.tab === "studio" && t.dataset.tab !== "studio") stFlush();  // keep the studio's pending edits
+    S.tab = t.dataset.tab; renderJob();
+    if (S.tab === "studio") studioEnter();
+  },
+  recStart: guard(async (t) => {
+    if (!navigator.mediaDevices || !window.MediaRecorder) throw new Error("This browser cannot record audio. Upload a file instead.");
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    const rec = new MediaRecorder(stream); const chunks = [];
+    rec.ondataavailable = (ev) => { if (ev.data.size) chunks.push(ev.data); };
+    S.rec = { i: +t.dataset.i, rec, chunks, stream, cancel: false };
+    rec.onstop = guard(async () => {
+      const st = S.rec; stopTracks(); S.rec = null;
+      if (st.cancel) { rerenderScenes(); return; }
+      const blob = new Blob(st.chunks, { type: rec.mimeType });
+      rerenderScenes();
+      await attachVoice(st.i, blob, audioExt(rec.mimeType));
+    });
+    rec.start(); rerenderScenes();
+  }),
+  recStop: () => { if (S.rec) S.rec.rec.stop(); },
+  recCancel: () => { if (S.rec) { S.rec.cancel = true; S.rec.rec.stop(); } },
+  voiceRemove: guard(async (t) => { delete S.draft.scenes[+t.dataset.i].voice_file; await saveScript(); }),
+  toggleOwn: () => { S.form.ownScript = !S.form.ownScript; renderNew(); },
+  ideas: guard(async () => {
+    S.busyIdeas = true; S.ideasFor = ""; renderNew();
+    try { const r = await api("/api/ideas", { method: "POST", body: { kind: S.form.kind, count: 10, theme: S.form.topic.trim() } }); S.ideas = r.ideas.map((i) => ({ ...i, checked: false })); }
+    finally { S.busyIdeas = false; renderNew(); }
+  }),
+  festIdeas: guard(async (t) => {
+    S.busyIdeas = true; S.ideasFor = t.dataset.date; renderNew();
+    try { const r = await api("/api/ideas", { method: "POST", body: { kind: S.form.kind, count: 8, festival: t.dataset.date } }); S.ideas = r.ideas.map((i) => ({ ...i, checked: false })); }
+    finally { S.busyIdeas = false; renderNew(); const el = $(".ideas"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); }
+  }),
+  useIdea: () => { const i = S.ideas.find((x) => x.checked); if (i) { S.form.topic = i.topic; S.ideas = []; renderNew(); } },
+  batch: guard(async () => {
+    const f = S.form, topics = S.ideas.filter((i) => i.checked).map((i) => i.topic);
+    await api("/api/jobs/batch", { method: "POST", body: { topics, kind: f.kind, format: f.format, minutes: f.minutes, voice: f.voice, notes: f.notes, captions: f.captions, music: f.music, auto_render: f.auto_render, repeat: +f.repeat, ai_images: f.ai_images } });
+    S.ideas = []; toast(`Writing ${topics.length} scripts`); await refreshJobs(); renderNew();
+  }),
+  create: guard(async () => {
+    const f = S.form; if (f.topic.trim().length < 2) { toast("Enter a topic first.", true); return; }
+    const j = await api("/api/jobs", { method: "POST", body: { topic: f.topic, kind: f.kind, format: f.format, minutes: f.minutes, voice: f.voice, notes: f.notes, captions: f.captions, music: f.music, auto_render: f.auto_render, repeat: +f.repeat, ai_images: f.ai_images } });
+    S.form.topic = ""; S.form.notes = ""; await refreshJobs(); show("job", j.id); toast("Writing the script");
+  }),
+  createOwn: guard(async () => {
+    const f = S.form; if (f.topic.trim().length < 2) { toast("Enter a topic so you can find this video later.", true); return; }
+    const j = await api("/api/jobs", { method: "POST", body: { topic: f.topic, kind: f.kind, format: f.format, minutes: f.minutes, voice: f.voice, notes: f.notes, captions: f.captions, music: f.music, auto_render: f.auto_render, script_json: f.scriptJson, repeat: +f.repeat, ai_images: f.ai_images } });
+    S.form.scriptJson = ""; S.form.ownScript = false; await refreshJobs(); show("job", j.id); toast("Script added");
+  }),
+  addScene: (t) => { S.draft.scenes.splice(+t.dataset.i + 1, 0, { id: "", narration: "", pause_after: 0, visual: { type: "stock", query: "nature sunrise", heading: "", text: "", sub: "" } }); markDirty(); rerenderScenes(); },
+  delScene: (t) => { if (S.draft.scenes.length > 1) { S.draft.scenes.splice(+t.dataset.i, 1); markDirty(); rerenderScenes(); } },
+  discard: () => { S.draft = clone(S.job.script); S.dirtyScript = false; renderJob(); },
+  saveScript: guard(saveScript),
+  approve: guard(async () => {
+    const empty = S.draft.scenes.map((s, n) => [s, n + 1]).filter(([s]) => !s.narration.trim());
+    if (empty.some(([s]) => s.personal)) { toast(`Write your reflection first (scene ${empty.filter(([s]) => s.personal).map(([, n]) => n).join(", ")}). It is what makes this video yours.`, true); return; }
+    if (empty.length) { toast("Every scene needs narration. Fill in or remove the empty scenes.", true); return; }
+    if (S.dirtyScript) await saveScript();
+    await saveMeta().catch(() => {});
+    S.job = await api(`/api/jobs/${S.jobId}/render`, { method: "POST" }); renderJob(); toast("Render started"); refreshJobs();
+  }),
+  revise: guard(async () => {
+    const fb = $("#fb").value.trim(); if (fb.length < 3) { toast("Describe what should change.", true); return; }
+    if (S.dirtyScript && !confirm("Revising replaces your unsaved edits. Continue?")) return;
+    S.dirtyScript = false; S.job = await api(`/api/jobs/${S.jobId}/revise`, { method: "POST", body: { feedback: fb } }); renderJob(); toast("Revising the script"); refreshJobs();
+  }),
+  regen: guard(async () => { S.job = await api(`/api/jobs/${S.jobId}/revise`, { method: "POST", body: { feedback: "Write the full script from the topic." } }); renderJob(); }),
+  upload: guard(async () => {
+    const m = S.metaDraft; if (!m.title || !m.title.trim()) { toast("Add a title before uploading.", true); return; }
+    let force = false;
+    if (S.job.youtube) { if (!confirm("This video is already uploaded. Upload a second copy?")) return; force = true; }
+    if (m.privacy === "public" && !confirm("This will be public as soon as the upload finishes. Continue?")) return;
+    await saveMeta();
+    const body = { privacy: m.privacy || "private", publish_at: m.publish_at || "", force, override_limit: false };
+    try { S.job = await api(`/api/jobs/${S.jobId}/upload`, { method: "POST", body }); }
+    catch (e) {
+      if (e.status !== 429 || !confirm(e.message + "\n\nUpload anyway?")) throw e;
+      S.job = await api(`/api/jobs/${S.jobId}/upload`, { method: "POST", body: { ...body, override_limit: true } });
+    }
+    renderJob(); toast("Upload started"); refreshJobs(); refreshHealth();
+  }),
+  ytConnect: guard(async () => {
+    await api("/api/youtube/connect", { method: "POST" }); toast("Finish signing in in the browser window that opened.");
+    await refreshHealth(); rerenderCurrent();
+  }),
+  ytDisconnect: guard(async () => { await api("/api/youtube/disconnect", { method: "POST" }); await refreshHealth(); rerenderCurrent(); toast("Disconnected"); }),
+  goSetup: () => show("setup"),
+  setupTab: (t) => { S.setupTab = t.dataset.tab; renderSetup(); },
+  audSave: guard(async () => {
+    const f = audioForm(); S.audBusy = "save"; renderSetup();
+    try {
+      const sameEngine = f.engine === S.health.audio.engine;
+      await api("/api/audio", { method: "PUT", body: { engine: f.engine, music_provider: f.music, voice: sameEngine ? f.voice : "", keys: f.keys } });
+      S.audForm = null; toast("Voice and music settings saved");
+    } finally { S.audBusy = ""; await refreshHealth(); renderSetup(); }
+  }),
+  audCloneDelete: guard(async (t) => {
+    if (!confirm("Delete this cloned voice? It is also removed from your ElevenLabs account.")) return;
+    await api(`/api/audio/clone/${enc(t.dataset.id)}`, { method: "DELETE" }); await refreshHealth(); renderSetup(); toast("Voice deleted");
+  }),
+  imgSave: guard(async () => {
+    const f = S.imgForm;
+    await api("/api/images/settings", { method: "PUT", body: { provider: f.provider, model: f.provider === "placeholder" ? "" : f.model.trim(), quality: f.quality } });
+    S.imgForm = null; await refreshHealth(); renderSetup(); toast(`Pictures: ${S.health.images.label}`);
+  }),
+  imgModels: guard(async () => {
+    const f = S.imgForm; const r = await api("/api/images/models?provider=" + f.provider);
+    S.imgModels = { ...(S.imgModels || {}), [f.provider]: r.models }; renderSetup();
+    if (!r.models.length) toast("No image models found for this key.", true);
+  }),
+  metaConnect: guard(async () => {
+    S.metaBusy = true; renderSetup();
+    try { await api("/api/meta/connect", { method: "POST", body: S.metaForm }); S.metaForm = { app_id: "", app_secret: "", user_token: "" }; await refreshHealth(); toast("Facebook and Instagram connected"); }
+    finally { S.metaBusy = false; renderSetup(); }
+  }),
+  metaDisconnect: guard(async () => {
+    if (!confirm("Disconnect Facebook and Instagram from this dashboard?")) return;
+    await api("/api/meta/disconnect", { method: "POST" }); await refreshHealth(); renderSetup();
+  }),
+  socialWrite: guard(async () => {
+    S.socialBusy = true; renderJob();
+    try { const j = await api(`/api/jobs/${S.jobId}/social/write`, { method: "POST" }); S.job = j; S.socialDraft = socialFrom(j); toast("Caption written. Read it before posting."); }
+    finally { S.socialBusy = false; renderJob(); }
+  }),
+  socialPost: guard(async () => {
+    const platforms = [["facebook", "#soFb"], ["instagram", "#soIg"]].filter(([, sel]) => { const el = $(sel); return el && el.checked; }).map(([k]) => k);
+    if (!platforms.length) { toast("Choose Facebook, Instagram or both.", true); return; }
+    clearTimeout(socialTimer); await saveSocial();
+    if (!confirm(`Post this video publicly to ${platforms.map((x) => x === "facebook" ? "Facebook" : "Instagram").join(" and ")} now?`)) return;
+    const body = { platforms, force: false };
+    try { S.job = await api(`/api/jobs/${S.jobId}/social/post`, { method: "POST", body }); }
+    catch (e) {
+      if (e.status !== 409 || !confirm(e.message)) throw e;
+      S.job = await api(`/api/jobs/${S.jobId}/social/post`, { method: "POST", body: { ...body, force: true } });
+    }
+    renderJob(); toast("Posting started");
+  }),
+  llmSave: guard(async () => {
+    const f = llmForm(); S.llmBusy = "save"; S.llmTest = null; renderSetup();
+    try {
+      await api("/api/llm", { method: "PUT", body: { provider: f.provider, model: f.model.trim(), api_key: f.key.trim() } });
+      f.key = ""; await refreshHealth(); toast(`Now using ${S.health.llm.label}`);
+    } finally { S.llmBusy = ""; renderSetup(); }
+  }),
+  llmTest: guard(async () => {
+    S.llmBusy = "test"; S.llmTest = null; renderSetup();
+    try { const r = await api("/api/llm/test", { method: "POST" }); S.llmTest = r; }
+    catch (e) { S.llmTest = { ok: false, error: e.message }; }
+    finally { S.llmBusy = ""; renderSetup(); }
+  }),
+  llmModels: guard(async () => {
+    const f = llmForm(); S.llmBusy = "models"; renderSetup();
+    try { const r = await api("/api/llm/models?provider=" + f.provider); S.llmModels[f.provider] = r.models; if (!r.models.length) toast("No models returned for this key.", true); }
+    finally { S.llmBusy = ""; renderSetup(); }
+  }),
+  translate: guard(async () => { S.job = await api(`/api/jobs/${S.jobId}/translate`, { method: "POST" }); renderJob(); }),
+  statsRefresh: guard(async () => { await loadStats(true); }),
+  openJob: (t) => { S.tab = "publish"; show("job", t.dataset.id); },
+  makeShort: guard(async () => {
+    const j = await api(`/api/jobs/${S.jobId}/short`, { method: "POST", body: { scenes: S.shortPick || [] } });
+    S.shortPick = []; await refreshJobs(); S.tab = "script"; show("job", j.id); toast("Short created. Review its script, then render.");
+  }),
+  review: guard(async (t) => {
+    S.job = await api(`/api/jobs/${S.jobId}/review`, { method: "POST", body: { reviewed: t.checked } }); renderJob();
+  }),
+  delJob: guard(async () => {
+    if (!confirm("Delete this video, its script and all rendered files? This cannot be undone.")) return;
+    await api(`/api/jobs/${S.jobId}`, { method: "DELETE" });
+    toast("Deleted"); await refreshJobs(); show("new");
+  }),
+};
+main.addEventListener("click", (e) => { const t = e.target.closest("[data-act]"); if (t && actions[t.dataset.act]) actions[t.dataset.act](t, e); });
+function rerenderCurrent() { if (S.view === "setup") renderSetup(); else if (S.view === "job") renderJob(); else if (S.view === "stats") renderStats(); }
+
+$("#newBtn").addEventListener("click", () => show("new"));
+$("#studioBtn").addEventListener("click", () => openStudio());
+$("#setupBtn").addEventListener("click", () => show("setup"));
+$("#statsBtn").addEventListener("click", () => show("stats"));
+$("#createBtn").addEventListener("click", () => show("create"));
+
+/* ---- theme (light, dark, or follow the system) ---- */
+function applyTheme(t) {
+  if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+  const dark = t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  $("#themeLabel").textContent = dark ? "Light mode" : "Dark mode";
+}
+applyTheme(document.documentElement.dataset.theme || "");
+$("#themeBtn").addEventListener("click", () => {
+  const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  const next = dark ? "light" : "dark"; applyTheme(next);
+  try { localStorage.setItem("theme", next); } catch (e) { /* storage blocked */ }
+});
+
+/* ---- colour palette ---- */
+function applyPalette(p) {
+  document.documentElement.dataset.palette = p;
+  document.querySelectorAll(".swatch").forEach((b) => b.setAttribute("aria-pressed", b.dataset.palette === p ? "true" : "false"));
+}
+applyPalette(document.documentElement.dataset.palette || "saffron");
+document.querySelectorAll(".swatch").forEach((b) => b.addEventListener("click", () => {
+  applyPalette(b.dataset.palette);
+  try { localStorage.setItem("palette", b.dataset.palette); } catch (e) { /* storage blocked */ }
+}));
+
+/* ---- every password box gets a Show/Hide button ---- */
+function enhancePasswords(root) {
+  root.querySelectorAll("input[type=password]:not([data-pw])").forEach((inp) => {
+    inp.dataset.pw = "1";
+    const wrap = document.createElement("span"); wrap.className = "pw";
+    inp.parentNode.insertBefore(wrap, inp); wrap.appendChild(inp);
+    const b = document.createElement("button"); b.type = "button"; b.className = "reveal"; b.textContent = "Show";
+    b.setAttribute("aria-label", "Show or hide the key");
+    b.addEventListener("click", () => { const show = inp.type === "password"; inp.type = show ? "text" : "password"; b.textContent = show ? "Hide" : "Show"; });
+    wrap.appendChild(b);
+  });
+}
+new MutationObserver(() => enhancePasswords(main)).observe(main, { childList: true, subtree: true });
+$("#jobList").addEventListener("click", (e) => {
+  const b = e.target.closest(".job"); if (!b) return;
+  S.tab = "script"; show("job", b.dataset.id);
+});
+
+/* --------------------------------------------------------------- polling --- */
+async function refreshJobs() { S.jobs = await api("/api/jobs"); renderRail(); }
+async function refreshHealth() { S.health = await api("/api/health"); renderHealthDot(); }
+async function tick() {
+  let delay = 5000;
+  try {
+    await refreshJobs();
+    const anyBusy = S.jobs.some((j) => ["generating_script", "rendering", "uploading"].includes(j.status));
+    if (anyBusy || (S.job && (S.job.imaging || S.job.previewing))) delay = 1500;
+    if (S.view === "job" && S.jobId) await loadJob(false);
+    if (S.health && S.health.youtube && S.health.youtube.connecting) { await refreshHealth(); rerenderCurrent(); delay = 2000; }
+    if (Date.now() - (S.versionCheckedAt || 0) > 15000) {
+      S.versionCheckedAt = Date.now();
+      const v = await api("/api/version");
+      if (S.build && v.build !== S.build) showUpdateNote();
+    }
+  } catch (e) { delay = 6000; }
+  setTimeout(tick, delay);
+}
+
+function showUpdateNote() {
+  if ($("#updateNote")) return;
+  const el = document.createElement("div");
+  el.id = "updateNote"; el.setAttribute("role", "alert");
+  el.innerHTML = `<span>The dashboard was updated. Reload to get the latest version.</span><button class="btn primary" type="button">Reload</button>`;
+  el.querySelector("button").addEventListener("click", async () => {
+    if (S.tab === "studio" && typeof stFlush === "function") { try { await stFlush(); } catch (e) { /* reload anyway */ } }
+    location.reload();
+  });
+  document.body.appendChild(el);
+}
+/* Open the Studio: on the video being viewed, else the most recent video that has a script. */
+function openStudio() {
+  const id = S.view === "job" && S.jobId ? S.jobId : (S.jobs.find((j) => j.status !== "new" && j.status !== "generating_script") || {}).id;
+  if (!id) { toast("Create a video first. The Studio edits a video once its script is written.", true); return; }
+  S.tab = "studio";
+  if (S.view === "job" && S.jobId === id && S.job) { renderJob(); studioEnter(); renderRail(); return; }
+  S.pendingStudio = true;
+  show("job", id);
+}
+
+/* ------------------------------------------------------------------ boot --- */
+(async function boot() {
+  try {
+    [S.options, S.health] = await Promise.all([api("/api/options"), api("/api/health")]);
+    S.build = S.options.build;
+    S.festivals = (await api("/api/festivals?days=60").catch(() => ({ festivals: [] }))).festivals;
+    S.form.voice = ""; S.form.minutes = S.options.kinds[S.form.kind].default_minutes;
+    renderHealthDot();
+  } catch (e) { toast(e.message, true); }
+  await refreshJobs().catch(() => {});
+  show("new");
+  tick();
+})();
+</script>
+<script src="/studio.js"></script>
+<script src="/create.js"></script>
+</body>
+</html>

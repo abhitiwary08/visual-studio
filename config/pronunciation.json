@@ -1,0 +1,4 @@
+{
+  "_help": "Words the voice says wrongly -> how they should be spoken. Keys starting with _ are ignored. Example: \"नचिकेता\": \"न-चि-के-ता\"",
+  "_example": "Delete the underscore from a key to use it"
+}
